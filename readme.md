@@ -67,11 +67,30 @@ To start the agent:
 npm start
 ```
 
-If you have install it globally:
+### Setting Up Environment Variables
+
+Before running Saiku, configure the necessary environment variables. Copy the example environment file and then fill in the details.
 
 ```
-saiku
+cp .env.example .env
 ```
+
+Edit the `.env` file to include your specific information:
+
+```
+DB_HOST=
+DB_USER=
+DB_PASSWORD=
+EMAIL_PASS=
+EMAIL_USER=
+DISPLAY_FROM_EMAIL=
+USER=
+COMPANY=
+COUNTRY=
+CITY=
+PHONE=
+```
+
 ### Command Line Options
 
 Use Saiku with various options to tailor its operation to your needs:
