@@ -1,6 +1,6 @@
 {
-  "name": "agent",
-  "version": "1.0.0",
+  "name": "saiku",
+  "version": "0.0.1",
   "description": "The AI agent",
   "main": "dist/bin/cli.js",
   "types": "dist/index.d.ts",
@@ -60,15 +60,14 @@
     "ts-jest": "^29.1.1",
     "typescript": "^4.9.5"
   },
-  "author": "NOQTA",
+  "author": "Anis Marrouchi",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nooqta/agent.git"
+    "url": "https://github.com/nooqta/saiku.git"
   },
   "bin": {
-    "assitant": "dist/bin/cli.js",
-    "agent": "dist/bin/cli.js"
+    "saiku": "dist/bin/cli.js"
   },
   "_moduleAliases": {
     "@": "dist"
