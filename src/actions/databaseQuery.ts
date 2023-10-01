@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 interface QueryArgs {
-  database: string;
+  database?: string;
   query: string;
   values?: any[];
 }
@@ -13,7 +13,7 @@ export default class DatabaseQueryAction implements Action {
   name = "database_query";
   description = "Execute a database query";
   arguments = [
-    { name: "database", type: "string", required: true },
+    { name: "database", type: "string", required: false },
     { name: "query", type: "string", required: true },
     { name: "values", type: "array", required: false, items: { type: "string" } },
   ];
@@ -22,24 +22,25 @@ export default class DatabaseQueryAction implements Action {
 
 
   async init(database: string) {
-    this.connection = await createConnection({
+    const connectionOptions: any = {
       host: process.env.DB_HOST,
       user: process.env.DB_USER || 'root',
       password: process.env.DB_PASSWORD || 'password',
-      database,
-    });
+    };
+    if (database) {
+      connectionOptions.database = database;
+    }
+    this.connection = await createConnection(connectionOptions);
+    
   }
 
   async run(args: QueryArgs): Promise<any> {
-    await this.init(args.database);
+    await this.init(args.database || "");
 
     try {
         // @ts-ignore
       const [results] = await this.connection.execute(args.query, args.values);
-      // If the query is SHOW TABLES, map the result to a string
-    if (args.query.trim().toUpperCase().includes('SHOW TABLES') && Array.isArray(results)) {
-        return results.map((row: any) => Object.values(row)[0]).join(', ');
-      }
+    
       return JSON.stringify(results);
     } catch (error) {
       return JSON.stringify(error);
