@@ -72,6 +72,30 @@ If you have install it globally:
 ```
 saiku
 ```
+### Command Line Options
+
+Use Saiku with various options to tailor its operation to your needs:
+
+```
+Usage: saiku [options]
+
+AI agent to help automate your tasks
+```
+
+#### Options:
+
+```
+  -v, --version                Output the current version
+  -exec, --allowCodeExecution  Execute the code without prompting the user. (default: false)
+  -h, --help                   Display help for command
+```
+
+For example, to allow code execution without prompting:
+
+```
+saiku -exec
+```
+
 ## Future Features
 
 - **Incorporation of Diverse Models**: While currently relying on OpenAI and its code interpreter, future versions of Saiku aim to incorporate various other AI and LLM models to enhance its capabilities and versatility
