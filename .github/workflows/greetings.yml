@@ -1,0 +1,10 @@
+name: Auto message for Issues
+on: issues
+jobs:
+  greeting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/first-interaction@v1
+        with:
+          repo-token: ${{ secrets.CUSTOM_TOKEN }}
+          issue-message: 'Hello @${{ github.actor }} , thank you for submitting an issue! 👍 We highly appreciate your time and effort.'
