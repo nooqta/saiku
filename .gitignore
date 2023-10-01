@@ -1,0 +1,48 @@
+# Node.js build and package artifacts
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# TypeScript build output
+dist/
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-workspace
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+
+# Debug log
+debug.log
+
+# If you're using Bower for some reason
+bower_components/
+
+# If you decide not to commit package lock files
+# package-lock.json
+# yarn.lock
+
+# Any generated data or test files
+# data/
+# *.csv
+# *.json
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+
+# Custom data folder (if you have one)
+# data/
+
+# Project related
+tmp
+.env
