@@ -174,7 +174,6 @@ class Agent {
       let args = functionCall?.arguments ?? "";
       let result: any = "";
       try {
-        console.log(functionCall);
         args = JSON.parse(functionCall?.arguments ?? "");
         if(!this.options.allowCodeExecution) {
           // request to execute code
