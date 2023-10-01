@@ -87,6 +87,7 @@ class Agent {
   }
 
   async act(actionName: string, args: any): Promise<string> {
+    try { 
     const action = this.functions[actionName];
     this.displayMessage(
       `_Executing action **${actionName}: ${action.description}**_`
@@ -101,6 +102,9 @@ class Agent {
       this.displayMessage(`No action found with name: **${actionName}**`);
       return "Action not found";
     }
+  } catch (error) {
+      return JSON.stringify(error);
+  }
   }
 
   evaluatePerformance(): number {

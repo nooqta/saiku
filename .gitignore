@@ -46,3 +46,4 @@ bower_components/
 # Project related
 tmp
 .env
+*.docx

@@ -1,6 +1,6 @@
-# Contributing to Question-Answering AI Agent
+# Contributing to Saiku AI Agent
 
-First off, thank you for considering contributing to Question-Answering AI Agent. It's people like you that make Question-Answering AI Agent such a great tool.
+First off, thank you for considering contributing to Saiku AI Agent. It's people like you that make Saiku AI Agent such a great tool.
 
 ## Getting Started
 
@@ -25,7 +25,7 @@ Here's a rough outline of what the workflow for code contributions will look lik
 2. Clone your fork.
 3. Add a new remote to reference the main project.
     ```
-    git remote add upstream https://github.com/anis-marrouchi/question-answering-ai-agent.git
+    git remote add upstream https://github.com/nooqta/saiku.git
     ```
 4. Pull the latest changes from the main project's `main` branch.
     ```

@@ -16,10 +16,8 @@ export default class WordParseAction implements Action {
     try {
       // Load Word file
       const dataBuffer = await this.loadWord(args.url);
-      
       // Parse the Word content
       const data = await this.parseWord(dataBuffer, args.url);
-      
       // Return the parsed text content
       return data;
     } catch (error) {
@@ -57,7 +55,7 @@ export default class WordParseAction implements Action {
         });
       });
     } else {
-      throw new Error('Invalid file format. Only .doc and .docx files are supported.');
+      return 'Invalid file format. Only .doc and .docx files are supported.';
     }
   }
 }

@@ -20,6 +20,7 @@ class GeneralRunner implements LanguageRunner {
         data = data.toString();
         scriptOutput += data;
       });
+      
 
       child.on("error", (error) => reject(error));
       child.on("exit", (code) => {
@@ -100,7 +101,7 @@ class ShellRunner implements LanguageRunner {
       child.on("error", (error) => reject(error));
       child.on("exit", (code) =>
         code === 0
-          ? resolve(`Execution complete. ${stdout}`)
+          ? resolve(`Execution completed succesfully. ${stdout}`)
           : reject(`Exit with code: ${code}`)
       );
     });

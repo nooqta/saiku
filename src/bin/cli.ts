@@ -21,14 +21,13 @@ const getDirectories = (source: string) =>
     // add the default command
 const defaultCmd = require(path.resolve(
   process.mainModule?.path,
-  '..',
   'commands/index'
 ));
 
 defaultCmd(program);
 
 const cmdDir = getDirectories(
-  path.resolve(process.mainModule?.path, '..', 'commands').replace(/\\/g, '/')
+  path.resolve(process.mainModule?.path, 'commands').replace(/\\/g, '/')
 ).join(',');
 
 glob
