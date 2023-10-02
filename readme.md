@@ -60,7 +60,7 @@ npm install -g saiku
 ```
 ## Demo
 
-![](/assets/saiku.mp4)
+https://github.com/nooqta/saiku/assets/3036133/c8f8a983-20c6-4404-a8ad-16c3d9fab496
 
 ### A Jupyter notebook available on Google Colab:
 
