@@ -5,7 +5,7 @@ import OpenAI from "openai";
 export default class ScrapeAndProcessURLAction implements Action {
   name = "scrape_and_process_url";
   description =
-    "Scrape a URL and process its content based on the provide query. Use only when you need the content visible from the browser.";
+    "Scrape a URL and process its content based on the provided query. Use only when you need the content visible from the browser.";
   arguments = [
     { name: "url", type: "string", required: true },
     { name: "query", type: "string", required: true },
