@@ -58,6 +58,13 @@ Although Saiku is available as an npm package, we are still in the early stages 
 ```
 npm install -g saiku
 ```
+## Demo
+
+![](assets/saiku.mp4)
+
+#### A Jupyter notebook available on Google Colab:
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://drive.google.com/file/d/1eQMgGCojQXJu7S3xGp9vHU83gRyErsxC/view?usp=sharing)
 
 ## Usage
 
