@@ -29,7 +29,7 @@ export default class OpenAICompletionAction implements Action {
           content: args.userQuery,
         },
       ],
-      model: 'gpt-3.5-turbo',
+      model:  process.env.OPENAI_MODEL || "gpt-3.5-turbo",
     });
 
     // Return the content from the completion

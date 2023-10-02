@@ -156,7 +156,7 @@ class Agent {
               ...this.currentMessages.slice(this.currentMessages.length - 20),
             ]
           : this.currentMessages,
-      model: "gpt-4",
+      model:  process.env.OPENAI_MODEL || "gpt-3.5-turbo",
       // @ts-ignore
       functions: functions,
     });

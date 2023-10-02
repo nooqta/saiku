@@ -63,7 +63,7 @@ async function processContent(
 
   // Further process with OpenAI
   const response = await openai.chat.completions.create({
-    model: "gpt-4",
+    model: process.env.OPENAI_MODEL || "gpt-3.5-turbo",
     messages: [
       {
         role: "system",
