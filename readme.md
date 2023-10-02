@@ -61,12 +61,27 @@ npm install -g saiku
 
 ## Usage
 
+### Running the Project Locally
+
+Before starting Saiku locally, build the project using the following command:
+
+```
+npm run build
+```
+
 To start the agent:
 
 ```
 npm start
 ```
 
+For automated building during development, use:
+
+```
+npm run watch
+```
+
+This will automatically build the project whenever files are changed, helping streamline the development process.
 ### Setting Up Environment Variables
 
 Before running Saiku, configure the necessary environment variables. Copy the example environment file and then fill in the details.
@@ -78,6 +93,8 @@ cp .env.example .env
 Edit the `.env` file to include your specific information:
 
 ```
+OPENAI_API_KEY=
+OPENAI_MODEL=
 DB_HOST=
 DB_USER=
 DB_PASSWORD=
