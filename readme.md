@@ -62,7 +62,7 @@ npm install -g saiku
 
 ![](assets/saiku.mp4)
 
-#### A Jupyter notebook available on Google Colab:
+### A Jupyter notebook available on Google Colab:
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://drive.google.com/file/d/1eQMgGCojQXJu7S3xGp9vHU83gRyErsxC/view?usp=sharing)
 
