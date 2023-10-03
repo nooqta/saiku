@@ -31,6 +31,10 @@ PEAS stands for Performance measure, Environment, Actuators, and Sensors. It's a
 - OpenAI GPT-4 Integration
 - Extensible and Customizable
 
+## Prerequisites
+
+- Node.js installed
+- API keys from OpenAI and ElevenLabs
 ## Installation
 
 Clone this repository:
@@ -127,17 +131,35 @@ AI agent to help automate your tasks
 
 #### Options:
 
-```
-  -v, --version                Output the current version
-  -exec, --allowCodeExecution  Execute the code without prompting the user. (default: false)
-  -h, --help                   Display help for command
-```
+| Short | Long                  | Description                                                                                      | Default  |
+|-------|-----------------------|--------------------------------------------------------------------------------------------------|----------|
+| `-v`  | `--version`           | Output the current version.                                                                      |          |
+| `-exec`| `--allowCodeExecution`| Execute the code without prompting the user.                                                    | `false`  |
+| `-s`  | `--speech <type>`     | Receive voice input from the user and/or output responses as speech. Possible values: input, output, both, none. | `"none"` |
+| `-role`| `--systemMessage`    | The model system role message.                                                                   |          |
+| `-h`  | `--help`              | Display help for command.                                                                        |          |
 
-For example, to allow code execution without prompting:
+## Examples:
+
+To allow code execution without prompting:
 
 ```
 saiku -exec
 ```
+or
+```
+npm start -- -exec
+```
+
+To enable voice input and output:
+```
+saiku -s both
+```
+or
+```
+npm start -- --speech both
+```
+
 
 ## Future Features
 

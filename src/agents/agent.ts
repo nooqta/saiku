@@ -7,6 +7,8 @@ import TerminalRenderer from "marked-terminal";
 import OpenAI from "openai";
 import dotenv from 'dotenv'; 
 import prompts from "prompts";
+import os from 'os';
+
 dotenv.config();
 
 interface AgentOptions {
@@ -39,6 +41,44 @@ class Agent {
       this.systemMessage = options.systemMessage;
     }
     this.actions = this.getFunctionsDefinitions();
+  }
+
+  async listen(): Promise<string> {
+    return await this.functions["speech_to_text"].run({});
+  }
+
+  async speak(text: string, useLocal = false): Promise<void> {
+
+    if(!useLocal) {
+    // We request openai to suggest a text that can be spoken
+    const response = await this.openai.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content: `
+          Generate a Siri-friendly speech from the following text, capturing all key points while omitting or rephrasing unsuitable content.          `,
+        },
+        {
+          role: "user",
+          content: text,
+        }
+      ],
+      model: process.env.OPENAI_MODEL || "gpt-3.5-turbo",
+      max_tokens: 64,
+      temperature: 0.8,
+    }); // Add 'as any' to bypass the type checking error
+    text = response.choices[0].message.content || text;
+  }
+    if (os.platform() === 'darwin') {
+      // we use execute_code action and Siri to speak the text
+      await this.functions["execute_code"].run({ code: `say "${text}"`, language: 'applescript' });
+      // @todo: add support for other platforms
+    } else {
+    const filename =  await this.functions["text_to_speech"].run({ text });
+    // play audio file
+    const player = require("play-sound")(({}));
+    await player.play(filename)
+    }
   }
 
   public displayMessage(message: string) {
@@ -172,6 +212,10 @@ class Agent {
       marked.setOptions({
         renderer: new TerminalRenderer(),
       });
+      if(['both', 'output'].includes(this.options.speech)) {
+        console.log('speaking')
+        await this.speak(content);
+      }
       console.log(marked(content));
     } else {
       let actionName = functionCall?.name ?? "";

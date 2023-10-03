@@ -1,9 +1,10 @@
 import fetch from 'node-fetch';
 import fs from 'fs';
 import { Action } from '@/interfaces/action';
-
+import dotenv from 'dotenv'; 
+dotenv.config();
 class TextToSpeechAction implements Action {
-  name = 'textToSpeech';
+  name = 'text_to_speech';
   description = 'Converts text to speech and returns the path to the generated audio file.';
   arguments = [
     {
@@ -42,16 +43,15 @@ class TextToSpeechAction implements Action {
       });
 
       if (!response.ok) {
-        throw new Error(response.statusText);
+        return JSON.stringify(`Speech to Text failed: ${response.statusText}`);
       }
 
       // Assuming the response is the audio data
       const audioBuffer = await response.buffer();
       
       // Save the audio file to the desired location
-      const audioFilePath = 'output/audio.mp3'; // Update the path as needed
+      const audioFilePath = 'speak.mp3'; // Update the path as needed
       fs.writeFileSync(audioFilePath, audioBuffer);
-
       return audioFilePath;
 
     } catch (error) {

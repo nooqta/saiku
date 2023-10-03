@@ -4,7 +4,8 @@ import { requiresm } from 'esm-ts';
 import Agent from '../../agents/agent';
 
 
-async function main(opts = {}) {
+async function main(opts: any) {
+  const { speech } = opts;
   // Initialize the agent
   // @todo: allow the user to specify multiple actions paths
   const agent = new Agent({ actionsPath: "../actions" });
@@ -25,16 +26,31 @@ async function main(opts = {}) {
       By using this service, users grant you full access to their machines, providing explicit consent for you to act on their behalf. Users acknowledge and accept all legal implications of this access, holding themselves responsible for any consequences that may arise.
               `
   ;
-  agent.displayMessage(`_Hello, I am your assistant. I am here to help you with your tasks._`)
+  let message = `_Hello, I am your assistant. I am here to help you with your tasks._`;
+  if(['both', 'output'].includes(speech)) {
+    // @ts-ignore
+    const { oraPromise } = await requiresm('ora');
+    await oraPromise(agent.speak(message, true));
+  }
+
+  agent.displayMessage(message)
   do {
+    let userQuery = "";
+    if(['both', 'input'].includes(speech)) {
+      // @ts-ignore
+      const { oraPromise } = await requiresm('ora');
+      userQuery = await oraPromise(agent.listen());
+    } else {
     // Ask the user for a query or to type 'quit' to exit
     let promptObject: any = {
       type: 'text',
       name: 'answer',
       message: '>',
   };
-    const {answer: userQuery} = await prompt(promptObject, { onCancel: () =>  process.exit(0)} );
 
+    const {answer} = await prompt(promptObject, { onCancel: () =>  process.exit(0)} );
+    userQuery = answer;
+}
 
     if (userQuery.toLowerCase() !== "quit") {
 
