@@ -152,6 +152,10 @@ saiku -exec
 - **Enhanced Memory Handling**: Upgrades in memory handling for optimal and consistent performance.
 - **Document Summarization**: Integration of document summarization features for effective handling of large textual data.
 - **Advanced Actions**: Inclusion of computer vision and image interpretation capabilities, broadening the spectrum of tasks Saiku can adeptly handle.
+- **OpenAI Cost Tracking**: Incorporating features to track and analyze the costs associated with OpenAI API usage, enabling better budget management and cost-efficiency.
+- **Budget Settings**: Implementation of budget settings to allow users to set and manage spending limits on AI resources, ensuring cost-effective operation.
+- **Multi-Agent Systems**: Exploration and integration of multi-agent systems to promote collaborative problem-solving and to enrich the PEAS framework within Saiku, potentially elevating the project's ability to handle complex, dynamic environments.
+- **PEAS Enhancement**: Further refining the existing PEAS framework to accommodate a wider range of environments, actuator capabilities, and sensor inputs, aiming for a more versatile and adaptive AI agent.
 
 ## Contributing
 
