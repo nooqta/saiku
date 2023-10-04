@@ -53,27 +53,23 @@ async function processContent(
   page: any,
   query = "What is the main content of this page?"
 ) {
-  // Clean the HTML and generate Emmet-like snippet
+  // Clean the HTML
   await cleanHTML(page);
-  const emmetSnippet = await htmlToEmmet(page);
-  await removeNonMarkdownTags(page);
 
-  // Convert remaining HTML to Markdown
-  const markdownContent = await convertHtmlToMarkdown(page);
+  // Extract the page's content
+  const pageContent = await getPageContent(page);
 
-  // Further process with OpenAI
+  // Process with OpenAI
   const response = await openai.chat.completions.create({
     model: process.env.OPENAI_MODEL || "gpt-3.5-turbo",
     messages: [
       {
         role: "system",
-        content: `
-                ${query}
-                `,
+        content: query,
       },
       {
         role: "user",
-        content: `Reference content: \n\n ${markdownContent}`,
+        content: `Reference content: \n\n ${pageContent}`,
       },
     ],
   });
@@ -82,37 +78,9 @@ async function processContent(
   return response.choices[0]?.message?.content || "";
 }
 
-async function htmlToEmmet(page: any) {
+async function getPageContent(page: any) {
   return await page.evaluate(() => {
-    function recurse(element: HTMLElement) {
-      let snippet = element.tagName.toLowerCase();
-      let childrenSnippet = "";
-      for (let child of element.children) {
-        // @ts-ignore
-        childrenSnippet += `+${recurse(child)}`;
-      }
-      if (childrenSnippet) {
-        childrenSnippet = childrenSnippet.substring(1);
-      }
-      return `${snippet}>${childrenSnippet}`;
-    }
-    return recurse(document.body);
-  });
-}
-
-async function removeNonMarkdownTags(page: any) {
-  return await page.evaluate(() => {
-    document.querySelectorAll("*").forEach((el: any) => {
-      if (
-        !["H1", "H2", "H3", "A", "P", "UL", "LI", "EM", "STRONG"].includes(
-          el.tagName
-        )
-      ) {
-        if (el.childNodes.length === 1 && el.childNodes[0].nodeType === 3) {
-          el.replaceWith(el.textContent);
-        }
-      }
-    });
+    return document.body.innerText;
   });
 }
 
@@ -147,39 +115,3 @@ async function cleanHTML(page: any) {
   });
 }
 
-async function convertHtmlToMarkdown(page: any) {
-  return await page.evaluate(() => {
-    function recurse(element: HTMLElement) {
-      let md = "";
-      for (const child of element.childNodes) {
-        if (child.nodeType === 3) {
-          md += child.nodeValue;
-        } else if (child.nodeType === 1) {
-          // @ts-ignore
-          switch (child.tagName) {
-            case "H1":
-              md += `# ${child.textContent}\n`;
-              break;
-            case "H2":
-              md += `## ${child.textContent}\n`;
-              break;
-            case "H3":
-              md += `### ${child.textContent}\n`;
-              break;
-            case "P":
-              md += `${child.textContent}\n`;
-              break;
-            case "LI":
-              md += `- ${child.textContent}\n`;
-              break;
-            default:
-              // @ts-ignore
-              md += recurse(child);
-          }
-        }
-      }
-      return md;
-    }
-    return recurse(document.body);
-  });
-}
