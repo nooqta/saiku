@@ -35,6 +35,22 @@ PEAS stands for Performance measure, Environment, Actuators, and Sensors. It's a
 
 - Node.js installed
 - API keys from OpenAI and ElevenLabs
+- Google Cloud SDK installed and configured with a project:
+  - Install [Google Cloud SDK](https://cloud.google.com/sdk/docs/install)
+  - Authenticate with Google Cloud: 
+    ```bash
+    gcloud auth login
+    ```
+  - Set your project ID:
+    ```bash
+    gcloud config set project <your-project-id>
+    ```
+- Enable the Google Vision API for your project:
+  - Visit the [Google Cloud Console](https://console.cloud.google.com/)
+  - Navigate to the 'APIs & Services > Dashboard' 
+  - Click on '+ ENABLE APIS AND SERVICES', search for 'Vision API' and enable it.
+
+
 ## Installation
 
 Clone this repository:
