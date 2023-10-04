@@ -40,8 +40,9 @@ async function main(opts: any) {
       // @ts-ignore
       const { oraPromise } = await requiresm('ora');
       userQuery = await oraPromise(agent.listen());
-    } else {
-    // Ask the user for a query or to type 'quit' to exit
+    } 
+    // Ask the user for a query or to type 'quit' to exit.
+    // @todo: should we prompt the user for a query or just listen?
     let promptObject: any = {
       type: 'text',
       name: 'answer',
@@ -49,8 +50,7 @@ async function main(opts: any) {
   };
 
     const {answer} = await prompt(promptObject, { onCancel: () =>  process.exit(0)} );
-    userQuery = answer;
-}
+    userQuery += userQuery.concat(answer);
 
     if (userQuery.toLowerCase() !== "quit") {
 
