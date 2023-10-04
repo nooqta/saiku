@@ -25,10 +25,13 @@ class Agent {
   });
   score = 100;
   messages: any[] = [];
-  systemMessage = {};
+  systemMessage = 'You are a helpful assistant';
   functions: { [key: string]: Action } = {};
   actions: { [key: string]: any } = {};
-  memory: any = {}; // A basic representation of agent's memory. Can be replaced with a more sophisticated data structure.
+  memory: any = {
+    lastAction: null,  // Name of the last action
+    lastActionStatus: null,  // 'success' or 'failure'
+  }; // A basic representation of agent's memory. Can be replaced with a more sophisticated data structure.
   objectives: any[] = []; // Agent's objectives.
   options: AgentOptions = { actionsPath: "" };
   currentObjective: any = null; // The current objective that the agent is trying to achieve.
@@ -102,6 +105,9 @@ class Agent {
     return new Promise((resolve) => {
       // @todo: provide more context information
       resolve({
+        agent: {
+          name: 'Saiku'
+        },
         os: process.platform,
         arch: process.arch,
         version: process.version,
@@ -126,6 +132,7 @@ class Agent {
     });
   }
 
+
   async act(actionName: string, args: any): Promise<string> {
     try { 
     const action = this.functions[actionName];
@@ -133,11 +140,23 @@ class Agent {
       `_Executing action **${actionName}: ${action.description}**_`
     );
     if (action) {
-      const output = await action.run(args);
+      try {
+        // @ts-ignore
+        const output = await action.run(args);
+        this.memory = await this.updateMemory(this.memory, {
+          lastAction: actionName,
+          lastActionStatus: "success",
+        });
+        return output;
+      } catch (error) {
+        this.memory = await this.updateMemory(this.memory, {
+          lastAction: actionName,
+          lastActionStatus: "failure",
+        });
+        return JSON.stringify(error);
 
-      // @ts-ignore
-      this.memory = await this.updateMemory(this.memory, args);
-      return output;
+      }
+
     } else {
       this.displayMessage(`No action found with name: **${actionName}**`);
       return "Action not found";
@@ -177,7 +196,14 @@ class Agent {
     return this.memory;
   }
 
-  updateMemory(memory: any, args: any): any {}
+  updateMemory(memory: any, args: any): any {
+    this.memory = {
+      ...memory,
+      ...this.memory,
+      ...args
+
+    }
+  }
   async handleUserQuery(): Promise<void> {
     const systemMessage = {
       role: "system",
@@ -213,7 +239,6 @@ class Agent {
         renderer: new TerminalRenderer(),
       });
       if(['both', 'output'].includes(this.options.speech)) {
-        console.log('speaking')
         await this.speak(content);
       }
       console.log(marked(content));

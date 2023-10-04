@@ -1,6 +1,7 @@
 import { Action } from "@/interfaces/action";
 import { spawn } from "child_process";
-
+import { marked } from "marked";
+import TerminalRenderer from "marked-terminal"
 interface LanguageRunner {
   runCode(code: string): Promise<string>;
 }
@@ -168,6 +169,10 @@ export default class ExecuteCodeAction implements Action {
 
   async run(args: { language: string; code: string }): Promise<string> {
     let runner: LanguageRunner;
+    marked.setOptions({
+      renderer: new TerminalRenderer(),
+    });
+    console.log(marked(args.code));
     switch (args.language) {
       case "pip":
       case "command":
