@@ -12,10 +12,17 @@ class TextToSpeechAction implements Action {
       type: 'string',
       description: 'The text to be converted to speech.',
       required: true
+    },
+    {
+      name: 'play',
+      type: 'boolean',
+      description: 'Play the audio file after it is generated.',
+      required: true,
+      default: true
     }
   ];
 
-  async run(args: { text: string }): Promise<string> {
+  async run(args: { text: string, play: boolean }): Promise<string> {
     const { text } = args;
     let voice_id = '21m00Tcm4TlvDq8ikWAM';
     const url = `https://api.elevenlabs.io/v1/text-to-speech/${voice_id}/stream`;
@@ -52,6 +59,21 @@ class TextToSpeechAction implements Action {
       // Save the audio file to the desired location
       const audioFilePath = 'speak.mp3'; // Update the path as needed
       fs.writeFileSync(audioFilePath, audioBuffer);
+      // if(args.play) {
+        // Play the audio file
+        const util = require('util');
+        const exec = util.promisify(require('child_process').exec);
+        // for mac
+        if(process.platform === 'darwin') {
+          await exec(`afplay ${audioFilePath}`);
+        } else if(process.platform === 'linux') {
+          // for linux
+          await exec(`play ${audioFilePath}`);
+        } else {
+          // for windows
+          await exec(`start ${audioFilePath}`);
+        }
+      // }      
       return audioFilePath;
 
     } catch (error) {

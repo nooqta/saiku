@@ -143,13 +143,13 @@ class Agent {
       try {
         // @ts-ignore
         const output = await action.run(args);
-        this.memory = await this.updateMemory(this.memory, {
+        await this.updateMemory({
           lastAction: actionName,
           lastActionStatus: "success",
         });
         return output;
       } catch (error) {
-        this.memory = await this.updateMemory(this.memory, {
+        await this.updateMemory( {
           lastAction: actionName,
           lastActionStatus: "failure",
         });
@@ -196,12 +196,10 @@ class Agent {
     return this.memory;
   }
 
-  updateMemory(memory: any, args: any): any {
+  updateMemory(args: any): any {
     this.memory = {
-      ...memory,
       ...this.memory,
       ...args
-
     }
   }
   async handleUserQuery(): Promise<void> {
@@ -246,6 +244,14 @@ class Agent {
       let actionName = functionCall?.name ?? "";
       let args = functionCall?.arguments ?? "";
       let result: any = "";
+      // We avoid executing if the last action is the same as the current action
+      if (this.memory.lastAction === actionName) {
+        this.updateMemory({
+          lastAction: null,
+          lastActionStatus: null,
+        });
+        return;
+      }
       try {
         args = JSON.parse(functionCall?.arguments ?? "");
         if(!this.options.allowCodeExecution) {
@@ -268,6 +274,7 @@ class Agent {
       catch (error) {
         result = JSON.stringify(error);
       }
+      
       this.messages.push({
         role: "function",
         name: actionName,
