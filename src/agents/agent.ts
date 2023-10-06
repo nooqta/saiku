@@ -23,6 +23,7 @@ class Agent {
   openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   });
+  worker?: Agent;
   score = 100;
   messages: any[] = [];
   systemMessage = 'You are a helpful assistant';

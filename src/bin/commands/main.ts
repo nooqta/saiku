@@ -1,7 +1,7 @@
 import {prompt} from 'prompts';
 // @ts-ignore
 import { requiresm } from 'esm-ts';
-import Agent from '../../agents/agent';
+import Agent from '@/agents/agent';
 
 
 async function main(opts: any) {
