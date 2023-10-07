@@ -7,7 +7,6 @@ import PlanningAgent from '../../../agents/planningAgent';
 
 async function main(opts: any) {
   const { speech } = opts;
-  console.log(opts);
   let userQuery = "";
   // Initialize the agent
   // @todo: allow the user to specify multiple actions paths
