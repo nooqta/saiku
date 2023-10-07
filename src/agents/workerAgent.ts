@@ -175,6 +175,7 @@ class Agent implements IAgent {
             lastAction: actionName,
             lastActionStatus: "success",
           });
+
           return output;
         } catch (error) {
           await this.updateMemory({
@@ -248,7 +249,7 @@ class Agent implements IAgent {
       let args = functionCall?.arguments ?? "";
       let result: any = "";
       // We avoid executing if the last action is the same as the current action
-      if (this.memory.lastAction === actionName) {
+        if (this.memory.lastAction === actionName && this.memory.lastActionStatus === 'failure') {
         this.updateMemory({
           lastAction: null,
           lastActionStatus: null,
@@ -283,7 +284,7 @@ class Agent implements IAgent {
         content: result,
       });
 
-      return result;
+      return await this.interact();
     }
   }
 

@@ -234,7 +234,6 @@ class Agent implements IAgent {
   async interact(): Promise<void> {
     const decision = await this.think();
 
-
     const functionCall = decision.choices[0].message.function_call;
     const content = decision.choices[0].message.content;
 
@@ -255,7 +254,7 @@ class Agent implements IAgent {
       let args = functionCall?.arguments ?? "";
       let result: any = "";
       // We avoid executing if the last action is the same as the current action
-      if (this.memory.lastAction === actionName) {
+      if (this.memory.lastAction === actionName && this.memory.lastActionStatus === 'failure') {
         this.updateMemory({
           lastAction: null,
           lastActionStatus: null,

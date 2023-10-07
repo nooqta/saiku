@@ -19,7 +19,7 @@ class PlanningAgent implements IAgent {
   model = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   });
-  worker?: Agent;
+  worker: Agent;
   score = 100;
   messages: any[] = [];
   systemMessage = "You are a helpful assistant";
@@ -41,6 +41,8 @@ class PlanningAgent implements IAgent {
       this.systemMessage = options.systemMessage;
     }
     this.actions = this.getFunctionsDefinitions();
+    // We initialize the worker agent
+    this.worker = new Agent({ actionsPath: options.actionsPath });
   }
 
   async listen(): Promise<string> {
@@ -78,6 +80,40 @@ class PlanningAgent implements IAgent {
     } catch (error) {
       throw new Error('An error occurred while thinking');
     }
+  }
+
+  async reflect(input: string, output: string): Promise<string|boolean> {
+    let decision = await this.model.chat.completions.create({
+      messages: [
+          {
+              role: "system",
+              content: `
+              Reflect on the user input: "${input}", the worker's output: "${output}" \n
+              and the worker conversation history 
+              ${JSON.stringify(this.worker.messages)} \n},
+              determine if an action can be taken on behalf of the user. If so, provide the content of a user
+              message to proceed with the next step. Only reply when applicable, possible, in a presentable format. Return "HALT" when 
+              user input is required.              `
+            },
+            {
+              role: "user",
+              content: input
+          },
+          {
+              role: "assistant",
+              content: output
+          }
+      ],
+      model: process.env.OPENAI_MODEL || "gpt-3.5-turbo"
+  });
+
+  const outputText = decision.choices[0].message.content || 'halt';
+
+  if (outputText.toLowerCase().includes('halt')) {
+      return false;  // User input is required
+  } else {
+      return outputText;  // Action on behalf of the user
+  }
   }
 
   async speak(text: string, useLocal = false): Promise<void> {
@@ -240,179 +276,40 @@ class PlanningAgent implements IAgent {
   }
   async interact(): Promise<void> {
     marked.setOptions({
-      renderer: new TerminalRenderer(),
+        renderer: new TerminalRenderer(),
     });
-    let hasFunctionCall = true;
-    // if don't have a plan, get one
-    if (this.memory.plan === undefined) {
-      this.messages.push({
-        role: "system",
-        content: `
-        Based on the user's request, create a detailed plan of actionable tasks to achieve our objective. Please break down any repetitive actions into individual tasks. If the objective can be achieved in a single step, specify the task without creating a plan. Do not suggest specific functions to be used, as it's the responsibility of the worker agent to decide on the function calls.
-
-        User's Request: ${this.messages.find(msg => msg.role === 'user')?.content}
-        
-        ---
-        
-        Plan:
-        
-        ---
-        
-        `,
+    // @ts-ignore
+    const userRequest = this.messages.findLast(msg => msg.role === 'user')?.content;
+    
+    // Let the worker execute the task
+    this.worker?.messages.push({
+        role: "user",
+        content: userRequest,
+    });
+    
+    let content = await this.worker.interact();
+    // reflect on the worker's output
+    let decision = await this.reflect(userRequest, content);
+    while ((decision != false)) {
+      this.worker.messages.push({
+        role: "user",
+        content: decision,
       });
-      // we don't use function calls for the first interaction
-      hasFunctionCall = false;
+      content = await this.worker.interact();
+      decision = await this.reflect(userRequest, content);
     }
-    let decision = await this.think(false);
 
-    const functionCall = decision.choices[0].message.function_call;
-    let content = decision.choices[0].message.content;
-
-    if (content) {
-      this.messages.push({
+    this.messages.push({
         role: "assistant",
         content,
-      });
-      if (this.memory.plan === undefined) {
-        this.updateMemory({
-          plan: content,
-        });
-      }
-      // get the current task
-      const currentTaskMessage = {
-        role: "system",
-        content: `
-        Based on the current plan  ${this.memory.plan},\n
-        and the list of completed actions ${JSON.stringify(
-          this.memory.completedActions?.map((action: any) => action.task)
-        )},\n
-        Formulate the next task in the sequence as a direct user request to be executed by the executing agent. Ensure to reference any relevant information from the previous action's results, including specifying the filename or path when necessary.
-
-        Example task:
-        "Read the content of the PDF file located at '/path/to/file.pdf' using the appropriate function."
-        
-        Constraints:
-        Our agent performs one task at a time. Any required data to run the action must be included, like the path to the file to read. Our agent does not perform actions with loops; a separate task must be assigned."
-                `,
-      };
-      this.messages.push(currentTaskMessage);
-      const nextTaskDecision = await this.think(false);
-      const currentTask = nextTaskDecision.choices[0].message.content;
-      // let the worker execute the task
-      this.worker?.messages.push({
-        role: "user",
-        content: currentTask,
-      });
-      
-      content = await this.worker?.interact();
-      // Update the plan
-  const updatePlanPrompt = `
-  Based on the user's input, the worker's available functions, and the history of completed actions
-  update the current plan to reflect the changes.
-`;
-this.messages.push({ role: "system", content: updatePlanPrompt });
-const updatedPlanDecision = await this.think(false);
-const updatedPlan = updatedPlanDecision.choices[0].message.content;
-this.updateMemory({ plan: updatedPlan });
-
-// Store completed actions in memory
-const completedAction = { task: currentTask, result: content };
-this.updateMemory({
-  completedActions: [...(this.memory.completedActions || []), completedAction]
-});
-      this.messages.push({
-        role: "system",
-        content: `
-        The worker agent has completed the task **${currentTask}**.\n
-        Based on the current plan ${this.memory.plan}\n,
-        and the list of completed actions ${JSON.stringify(
-          this.memory.completedActions?.map((action: any) => action.task)
-        )},\n
-        Formulate the next task in the sequence as a direct user request to be executed by _${this.worker?.name}_. 
-        Type **HALT** to stop the execution when done.\n
-        Ensure to reference any relevant information from the previous task's results while formulating the next task.
-                `
-      });
-
-      decision = await this.think(false);
-      content = decision.choices[0].message.content;
-      if (content.toLowerCase().includes("halt")) {
-        // we stop the execution and display the final answer
-        this.messages.push({
-          role: "system",
-          content: `
-          Based on the initial user request ${this.messages.find(msg => msg.role === 'user')?.content},\n 
-          Answer in a friendly manner the user's request.
-          `,
-        });
-        decision = await this.think(false);
-        content = decision.choices[0].message.content;
-        this.messages.push({
-          role: "assistant",
-          content,
-        });
-        if (["both", "output"].includes(this.options.speech)) {
-          await this.speak(content);
-        }
-        console.log(marked(content));
-        this.updateMemory({
-          lastAction: null,
-          lastActionStatus: null,
-        });
-      } else {
-        return await this.interact();
-      }
-    } else {
-      let actionName = functionCall?.name ?? "";
-      let args = functionCall?.arguments ?? "";
-      let result: any = "";
-      // We avoid executing if the last action is the same as the current action
-      if (this.memory.lastAction === actionName) {
-        this.displayMessage(
-          `Repeated error with action: **${actionName}**. Stopping execution.`
-        );
-        this.updateMemory({
-          lastAction: null,
-          lastActionStatus: null,
-        });
-        return;
-      }
-      try {
-        args = JSON.parse(functionCall?.arguments ?? "");
-        if (this.worker) {
-          // Delegate the task to the worker and await the result
-          result = await this.worker.act(actionName, args);
-        } else {
-          if (!this.options.allowCodeExecution) {
-            // request to execute code
-            const { answer } = await prompts({
-              type: "confirm",
-              name: "answer",
-              message: `Do you want to execute the code?`,
-              initial: true,
-            });
-            if (!answer) {
-              result = "Code execution cancelled for current action only";
-            } else {
-              result = await this.act(actionName, args);
-            }
-          } else {
-            result = await this.act(actionName, args);
-          }
-        }
-      } catch (error) {
-        result = JSON.stringify(error);
-      }
-
-      this.messages.push({
-        role: "function",
-        name: actionName,
-        content: result,
-      });
-
-      return await this.interact();
+    });
+    
+    if (["both", "output"].includes(this.options.speech)) {
+        await this.speak(content);
     }
-  }
+    console.log(marked(content));
+}
+
 
   getFunctionsDefinitions(): any {
     const actions = Object.values(this.functions).map((action) => ({

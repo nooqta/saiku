@@ -7,11 +7,13 @@ import PlanningAgent from '../../../agents/planningAgent';
 
 async function main(opts: any) {
   const { speech } = opts;
+  console.log(opts);
   let userQuery = "";
   // Initialize the agent
   // @todo: allow the user to specify multiple actions paths
   const master = new PlanningAgent({ actionsPath: "../actions"});
   master.name = "Master";
+  master.options = { ...master.options, ...opts };
   master.systemMessage = `You are the Planning Agent. Your role is to interpret user requests, break down these requests into a plan of actionable tasks and save it to memory, assign the tasks to the executing agent, process the results returned by the executing agent, track progress, decide on the next actions, and keep the user informed of the progress. You serve as a coordinator ensuring that tasks are carried out efficiently and effectively to meet the user's objectives. Your actions should reflect a logical and organized approach to task delegation and decision-making.`;
   const agent = new Agent({ actionsPath: "../actions" });
   agent.name = "Worker";

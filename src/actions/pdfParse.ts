@@ -1,6 +1,7 @@
 // Importing necessary modules
 import Agent from "@/agents/agent";
 import { Action } from "@/interfaces/action";
+import fetch from "node-fetch";
 import pdf from 'pdf-parse';
 
 // PDFParseAction Class

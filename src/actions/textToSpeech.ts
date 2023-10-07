@@ -3,6 +3,8 @@ import fs from 'fs';
 import { Action } from '@/interfaces/action';
 import dotenv from 'dotenv'; 
 import Agent from '@/agents/agent';
+import os from 'os';
+
 dotenv.config();
 class TextToSpeechAction implements Action {
   agent: Agent;
@@ -29,6 +31,12 @@ constructor(agent: Agent) {
 }
   async run(args: { text: string, play: boolean }): Promise<string> {
     const { text } = args;
+    if (os.platform() === 'darwin') {
+      // we use execute_code action and Siri to speak the text
+      await this.agent.functions["execute_code"].run({ code: `say "${text}"`, language: 'applescript' });
+      // @todo: add support for other platforms
+      return text;
+    }
     let voice_id = '21m00Tcm4TlvDq8ikWAM';
     const url = `https://api.elevenlabs.io/v1/text-to-speech/${voice_id}/stream`;
     const headers = {
