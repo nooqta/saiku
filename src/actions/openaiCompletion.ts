@@ -1,15 +1,20 @@
 import OpenAI from 'openai';
 import { Action } from '@/interfaces/action';
 import dotenv from 'dotenv'; 
+import Agent from '@/agents/agent';
 dotenv.config();
 
 export default class OpenAICompletionAction implements Action {
+  agent: Agent;
   name = 'openai_completion';
   description = 'Generate completions using the OpenAI API.';
   arguments = [
     { name: 'userQuery', type: 'string', required: true },
   ];
-
+// Constructor
+constructor(agent: Agent) {
+  this.agent = agent;
+}
   async run(args: { userQuery: string }): Promise<string> {
 
     // Initialize the OpenAI object

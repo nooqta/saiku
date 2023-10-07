@@ -1,16 +1,21 @@
 import {prompt} from 'prompts';
 // @ts-ignore
 import { requiresm } from 'esm-ts';
-import Agent from '../../agents/agent';
+import Agent from '../../../agents/workerAgent';
+import PlanningAgent from '../../../agents/planningAgent';
 
 
 async function main(opts: any) {
   const { speech } = opts;
+  let userQuery = "";
   // Initialize the agent
   // @todo: allow the user to specify multiple actions paths
+  const master = new PlanningAgent({ actionsPath: "../actions"});
+  master.name = "Master";
+  master.systemMessage = `You are the Planning Agent. Your role is to interpret user requests, break down these requests into a plan of actionable tasks and save it to memory, assign the tasks to the executing agent, process the results returned by the executing agent, track progress, decide on the next actions, and keep the user informed of the progress. You serve as a coordinator ensuring that tasks are carried out efficiently and effectively to meet the user's objectives. Your actions should reflect a logical and organized approach to task delegation and decision-making.`;
   const agent = new Agent({ actionsPath: "../actions" });
+  agent.name = "Worker";
   agent.options = { ...agent.options, ...opts };
-  let userQuery = "";
   agent.systemMessage = agent.systemMessage ||
       `
       You are a highly efficient assistant, committed to navigating various functionalities to address user inquiries until the task is accomplished or no further steps can be taken. Your skills encompass a range of actions, including retrieving and sending emails, and accessing calendar events. Utilize these capabilities to effectively and efficiently meet the user's needs. Strive to execute the task by diligently following user instructions and employing available functions as necessary.
@@ -27,14 +32,15 @@ async function main(opts: any) {
       By using this service, users grant you full access to their machines, providing explicit consent for you to act on their behalf. Users acknowledge and accept all legal implications of this access, holding themselves responsible for any consequences that may arise.
               `
   ;
+  master.worker = agent;
   let message = `_Hello, I am your assistant. I am here to help you with your tasks._`;
   if(['both', 'output'].includes(speech)) {
     // @ts-ignore
     const { oraPromise } = await requiresm('ora');
-    await oraPromise(agent.speak(message, true));
+    await oraPromise(master.speak(message, true));
   }
 
-  agent.displayMessage(message)
+  master.displayMessage(message)
   do {
     let userQuery = "";
     if(['both', 'input'].includes(speech)) {
@@ -55,7 +61,7 @@ async function main(opts: any) {
 
     if (userQuery.toLowerCase() !== "quit") {
 
-      agent.messages.push({
+      master.messages.push({
         role: "user",
         content: userQuery,
       });
@@ -64,8 +70,8 @@ async function main(opts: any) {
       const {oraPromise} = await requiresm('ora');
 
       // @todo for interactive execute_code oraPromise is not working. Example: nextjs
-      await agent.interact();
-      // await oraPromise(agent.handleUserQuery());
+      await master.interact();
+      // await oraPromise(agent.interact());
     }
   } while (userQuery.toLowerCase() !== "quit");
 }

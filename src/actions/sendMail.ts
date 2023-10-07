@@ -1,8 +1,10 @@
 import { Action } from "../interfaces/action";
 import nodemailer from "nodemailer";
 import dotenv from 'dotenv'; 
+import Agent from "@/agents/agent";
 dotenv.config();
 export default class SendEmailAction implements Action {
+  agent: Agent;
   name = "send_email";
   description = "Send an email";
   arguments = [
@@ -16,7 +18,10 @@ export default class SendEmailAction implements Action {
       items: { type: "string" },
     },
   ];
-
+// Constructor
+constructor(agent: Agent) {
+  this.agent = agent;
+}
   async run(args: {
     to: string;
     subject: string;

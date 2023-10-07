@@ -4,6 +4,7 @@ import * as ffmpeg from 'fluent-ffmpeg';
 import { Readable } from 'stream';
 import OpenAI from "openai";
 import * as readline from 'readline';
+import Agent from "@/agents/agent";
 
 // Setup ffmpeg path
 const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
@@ -15,6 +16,7 @@ const openai = new OpenAI({
 });
 
 export default class SpeechToTextAction implements Action {
+  agent: Agent;
   name = "speech_to_text";
   description = "Transcribe audio to text";
   arguments = [];
@@ -25,7 +27,10 @@ export default class SpeechToTextAction implements Action {
     // Initialize any other setup tasks if necessary
     // ... 
   }
-
+// Constructor
+constructor(agent: Agent) {
+  this.agent = agent;
+}
   async run(args = {}): Promise<string> {
     await this.init();
     await this.recordAudio(this.audioFilename);

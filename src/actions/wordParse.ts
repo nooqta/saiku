@@ -1,15 +1,22 @@
 // Importing necessary modules
+import Agent from "@/agents/agent";
 import { Action } from "@/interfaces/action";
 import mammoth from 'mammoth';
 import textract from 'textract';
 
 // WordParseAction Class
 export default class WordParseAction implements Action {
+  agent: Agent;
   name = 'parseWord';
   description = 'Parses a MS Word document from a URL or local file path and returns its content.';
   arguments = [
     { name: 'url', type: 'string', required: true, description: 'URL or local file path of the Word document' },
   ];
+
+  // Constructor
+  constructor(agent: Agent) {
+    this.agent = agent;
+  }
 
   // Handle specific operations
   async run(args: any): Promise<any> {

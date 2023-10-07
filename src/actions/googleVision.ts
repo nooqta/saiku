@@ -2,6 +2,7 @@ import Vision, { ImageAnnotatorClient } from '@google-cloud/vision';
 import { Action } from "@/interfaces/action";
 import { promises as fsPromises } from 'fs';
 import axios from 'axios';
+import Agent from '@/agents/agent';
 
 export default class GoogleVisionAction implements Action {
   name = "google_vision";
@@ -14,10 +15,12 @@ export default class GoogleVisionAction implements Action {
 
 private visionClient:  ImageAnnotatorClient;
 
-  constructor() {
+  constructor(agent: Agent) {
     // Instantiate the Vision client
     this.visionClient = new Vision.ImageAnnotatorClient();
+    this.agent = agent;
   }
+  agent: Agent;
 
   async run(args: { imageSource: string, features: string[] }): Promise<any> {
     const {features} = args;

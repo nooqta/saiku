@@ -1,8 +1,10 @@
 // File: apiRequestAction.ts
+import Agent from "@/agents/agent";
 import { Action } from "@/interfaces/action";
 import axios from 'axios'; // Using axios for making API requests
 
 export default class HTTPRequestAction implements Action {
+  agent: Agent;
   
     name = 'apiRequest';
     description = 'Make HTTP requests to specific URL including API\'s.';
@@ -14,7 +16,10 @@ export default class HTTPRequestAction implements Action {
       { name: 'data', type: 'object', required: false, description: 'Request Body' },
     ];
     
-
+// Constructor
+constructor(agent: Agent) {
+  this.agent = agent;
+}
   async run(args: any): Promise<any> {
     console.log(`${args.intent} from ${args.url}`);
     try {

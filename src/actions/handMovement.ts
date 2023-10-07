@@ -1,14 +1,19 @@
 import { Action } from "@/interfaces/action";
 import fs from "fs";
 import { exec } from "child_process";
+import Agent from "@/agents/agent";
 
 export default class HandMovementAction implements Action {
+    agent: Agent;
     name = "handMovement";
     description = "Use hand movements to interact with various elements on an HTML page using opencv.js";
     arguments = [
         { name: "userScript", type: "string", required: true, description: "The JavaScript logic to be executed based on hand movements." }
     ];
-
+// Constructor
+constructor(agent: Agent) {
+  this.agent = agent;
+}
     async run(args: any): Promise<string> {
         const userScript = args.userScript;
 

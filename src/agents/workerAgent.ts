@@ -5,27 +5,26 @@ import { join } from "path";
 import { marked } from "marked";
 import TerminalRenderer from "marked-terminal";
 import OpenAI from "openai";
-import dotenv from 'dotenv'; 
+import dotenv from "dotenv";
 import prompts from "prompts";
-import os from 'os';
-import { AgentOptions, IAgent } from "../interfaces/agent";
-
+import os from "os";
+import { IAgent, AgentOptions } from "@/interfaces/agent";
 dotenv.config();
 
-
 class Agent implements IAgent {
+  name?: string;
   // @todo: use llm instead and allow the user to specify the model
   model = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   });
   score = 100;
   messages: any[] = [];
-  systemMessage = 'You are a helpful assistant';
+  systemMessage = "You are a helpful assistant";
   functions: { [key: string]: Action } = {};
   actions: { [key: string]: any } = {};
   memory: any = {
-    lastAction: null,  // Name of the last action
-    lastActionStatus: null,  // 'success' or 'failure'
+    lastAction: null, // Name of the last action
+    lastActionStatus: null, // 'success' or 'failure'
   }; // A basic representation of agent's memory. Can be replaced with a more sophisticated data structure.
   objectives: any[] = []; // Agent's objectives.
   options: AgentOptions = { actionsPath: "" };
@@ -34,7 +33,7 @@ class Agent implements IAgent {
 
   constructor(options: AgentOptions) {
     // Load actions from the specified actionsPath.
-    this.loadFunctions(options.actionsPath);
+    this.loadActions(options.actionsPath);
     if (options.systemMessage) {
       this.systemMessage = options.systemMessage;
     }
@@ -80,36 +79,38 @@ class Agent implements IAgent {
   }
 
   async speak(text: string, useLocal = false): Promise<void> {
-
-    if(!useLocal) {
-    // We request openai to suggest a text that can be spoken
-    const response = await this.model.chat.completions.create({
-      messages: [
-        {
-          role: "system",
-          content: `
+    if (!useLocal) {
+      // We request openai to suggest a text that can be spoken
+      const response = await this.model.chat.completions.create({
+        messages: [
+          {
+            role: "system",
+            content: `
           Generate a Siri-friendly speech from the following text, capturing all key points while omitting or rephrasing unsuitable content.          `,
-        },
-        {
-          role: "user",
-          content: text,
-        }
-      ],
-      model: process.env.OPENAI_MODEL || "gpt-3.5-turbo",
-      max_tokens: 64,
-      temperature: 0.8,
-    }); // Add 'as any' to bypass the type checking error
-    text = response.choices[0].message.content || text;
-  }
-    if (os.platform() === 'darwin') {
+          },
+          {
+            role: "user",
+            content: text,
+          },
+        ],
+        model: process.env.OPENAI_MODEL || "gpt-3.5-turbo",
+        max_tokens: 64,
+        temperature: 0.8,
+      }); // Add 'as any' to bypass the type checking error
+      text = response.choices[0].message.content || text;
+    }
+    if (os.platform() === "darwin") {
       // we use execute_code action and Siri to speak the text
-      await this.functions["execute_code"].run({ code: `say "${text}"`, language: 'applescript' });
+      await this.functions["execute_code"].run({
+        code: `say "${text}"`,
+        language: "applescript",
+      });
       // @todo: add support for other platforms
     } else {
-    const filename =  await this.functions["text_to_speech"].run({ text });
-    // play audio file
-    const player = require("play-sound")(({}));
-    await player.play(filename)
+      const filename = await this.functions["text_to_speech"].run({ text });
+      // play audio file
+      const player = require("play-sound")({});
+      await player.play(filename);
     }
   }
 
@@ -119,13 +120,13 @@ class Agent implements IAgent {
     });
     console.log(marked(message));
   }
-  private loadFunctions(actionsPath: string) {
+  private loadActions(actionsPath: string) {
     const actionFiles = fs.readdirSync(
       join(path.resolve(__dirname, actionsPath))
     );
     actionFiles.forEach((file) => {
       const actionClass = require(path.join(actionsPath, file)).default;
-      const actionInstance: Action = new actionClass();
+      const actionInstance: Action = new actionClass(this);
       this.functions[actionInstance.name] = actionInstance;
     });
   }
@@ -135,10 +136,9 @@ class Agent implements IAgent {
       // @todo: provide more context information
       resolve({
         agent: {
-          name: 'Saiku'
+          name: "Saiku",
         },
         os: process.platform,
-        arch: process.arch,
         version: process.version,
         memory: process.memoryUsage(),
         cpu: process.cpuUsage(),
@@ -149,50 +149,47 @@ class Agent implements IAgent {
         // provide location information
         cwd: process.cwd(),
         // provide information about the current user
-        current_user: {
-          name: process.env.USER,
+        user: {
+          name: process.env.ME,
           country: process.env.COUNTRY,
           city: process.env.CITY,
           company: process.env.COMPANY,
           phone: process.env.PHONE,
         },
-        ...this.memory,
+        // ...this.memory,
       });
     });
   }
 
-
   async act(actionName: string, args: any): Promise<string> {
-    try { 
-    const action = this.functions[actionName];
-    this.displayMessage(
-      `_Executing action **${actionName}: ${action.description}**_`
-    );
-    if (action) {
-      try {
-        // @ts-ignore
-        const output = await action.run(args);
-        await this.updateMemory({
-          lastAction: actionName,
-          lastActionStatus: "success",
-        });
-        return output;
-      } catch (error) {
-        await this.updateMemory( {
-          lastAction: actionName,
-          lastActionStatus: "failure",
-        });
-        return JSON.stringify(error);
-
+    try {
+      const action = this.functions[actionName];
+      this.displayMessage(
+        `_Executing action **${actionName}: ${action.description}**_`
+      );
+      if (action) {
+        try {
+          // @ts-ignore
+          const output = await action.run(args);
+          await this.updateMemory({
+            lastAction: actionName,
+            lastActionStatus: "success",
+          });
+          return output;
+        } catch (error) {
+          await this.updateMemory({
+            lastAction: actionName,
+            lastActionStatus: "failure",
+          });
+          return JSON.stringify(error);
+        }
+      } else {
+        this.displayMessage(`No action found with name: **${actionName}**`);
+        return "Action not found";
       }
-
-    } else {
-      this.displayMessage(`No action found with name: **${actionName}**`);
-      return "Action not found";
-    }
-  } catch (error) {
+    } catch (error) {
       return JSON.stringify(error);
-  }
+    }
   }
 
   evaluatePerformance(): number {
@@ -228,13 +225,11 @@ class Agent implements IAgent {
   updateMemory(args: any): any {
     this.memory = {
       ...this.memory,
-      ...args
-    }
+      ...args,
+    };
   }
-  async interact(): Promise<void> {
+  async interact(): Promise<string> {
     const decision = await this.think();
-
-
     const functionCall = decision.choices[0].message.function_call;
     const content = decision.choices[0].message.content;
 
@@ -243,13 +238,11 @@ class Agent implements IAgent {
         role: "assistant",
         content,
       });
-      marked.setOptions({
-        renderer: new TerminalRenderer(),
+      this.updateMemory({
+        lastAction: null,
+        lastActionStatus: null,
       });
-      if(['both', 'output'].includes(this.options.speech)) {
-        await this.speak(content);
-      }
-      console.log(marked(content));
+      return content;
     } else {
       let actionName = functionCall?.name ?? "";
       let args = functionCall?.arguments ?? "";
@@ -260,19 +253,20 @@ class Agent implements IAgent {
           lastAction: null,
           lastActionStatus: null,
         });
-        return;
+        return `Repeated error with action: **${actionName}**. Stopping execution.`;
       }
       try {
         args = JSON.parse(functionCall?.arguments ?? "");
-        if(!this.options.allowCodeExecution) {
+
+        if (!this.options.allowCodeExecution) {
           // request to execute code
           const { answer } = await prompts({
             type: "confirm",
             name: "answer",
             message: `Do you want to execute the code?`,
-            initial: true
+            initial: true,
           });
-          if(!answer) {
+          if (!answer) {
             result = "Code execution cancelled for current action only";
           } else {
             result = await this.act(actionName, args);
@@ -280,18 +274,16 @@ class Agent implements IAgent {
         } else {
           result = await this.act(actionName, args);
         }
-      } 
-      catch (error) {
+      } catch (error) {
         result = JSON.stringify(error);
       }
-      
       this.messages.push({
         role: "function",
         name: actionName,
         content: result,
       });
 
-      return this.interact();
+      return result;
     }
   }
 

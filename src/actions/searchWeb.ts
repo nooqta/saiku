@@ -1,11 +1,18 @@
+import Agent from '@/agents/agent';
 import { Action } from '@/interfaces/action';
 
 export default class SearchWebAction implements Action {
+  agent: Agent;
   name = 'search_web';
   description = 'Perform a web search using Google Custom Search JSON API';
   arguments = [
     { name: 'query', type: 'string', required: true },
   ];
+  
+  // Constructor
+  constructor(agent: Agent) {
+    this.agent = agent;
+  }
 
   async run(args: { query: string }): Promise<any> {
     const apiKey = 'AIzaSyAv0Ro2l4eoxDeZK_qi4lHixbGgxGoKYDQ'; // Replace with your Google API key

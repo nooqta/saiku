@@ -1,3 +1,4 @@
+import Agent from "@/agents/agent";
 import { Action } from "@/interfaces/action";
 import { spawn } from "child_process";
 import { marked } from "marked";
@@ -96,52 +97,67 @@ class PythonRunner implements LanguageRunner {
 class ShellRunner implements LanguageRunner {
   async runCode(code: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      const child = spawn("sh", ["-c", code], { stdio: "inherit" });
+      const child = spawn("sh", ["-c", code]);  // Remove the stdio option
       let stdout = "";
-      child.on("data", (data) => stdout += data.toString());
+      let stderr = "";
+
+      child.stdout.on("data", (data) => stdout += data.toString());  // Correct event handler attachment
+      child.stderr.on("data", (data) => stderr += data.toString());  // Capture stderr as well
+
       child.on("error", (error) => reject(error));
       child.on("exit", (code) =>
         code === 0
-          ? resolve(`Execution completed succesfully. ${stdout}`)
-          : reject(`Exit with code: ${code}`)
+          ? resolve(`${stdout}`)
+          : reject(`Exit with code: ${code}\nError Output:\n${stderr}`)  // Include stderr in rejection
       );
     });
   }
 }
+
 
 class NodeRunner implements LanguageRunner {
   async runCode(code: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      const child = spawn("node", ["-e", code], { stdio: "inherit" });
+      const child = spawn("node", ["-e", code]);  // Remove the stdio option
       let stdout = "";
-      child.on("data", (data) => stdout += data.toString());
+      let stderr = "";
+
+      child.stdout.on("data", (data) => stdout += data.toString());
+      child.stderr.on("data", (data) => stderr += data.toString());
+
       child.on("error", (error) => reject(error));
       child.on("exit", (code) =>
         code === 0
           ? resolve(`Execution complete. ${stdout}`)
-          : reject(`Exit with code: ${code}`)
+          : reject(`Exit with code: ${code}\nError Output:\n${stderr}`)  // Include stderr in rejection
       );
     });
   }
 }
+
 
 class AppleScriptRunner implements LanguageRunner {
   async runCode(code: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      const child = spawn("osascript", ["-e", code], { stdio: "inherit" });
+      const child = spawn("osascript", ["-e", code]);  // Remove the stdio option
       let stdout = "";
-      child.on("data", (data) => stdout += data.toString());
+      let stderr = "";
+
+      child.stdout.on("data", (data) => stdout += data.toString());
+      child.stderr.on("data", (data) => stderr += data.toString());
 
       child.on("error", (error) => reject(error));
       child.on("exit", (code) =>
         code === 0
           ? resolve(`Execution complete. ${stdout}`)
-          : reject(`Exit with code: ${code}`)
+          : reject(`Exit with code: ${code}\nError Output:\n${stderr}`)  // Include stderr in rejection
       );
     });
   }
 }
+
 export default class ExecuteCodeAction implements Action {
+  agent: Agent;
   name = "execute_code";
   description = "Execute code in a specific language";
   arguments = [
@@ -166,7 +182,10 @@ export default class ExecuteCodeAction implements Action {
     },
     { name: "code", type: "string", required: true },
   ];
-
+// Constructor
+constructor(agent: Agent) {
+  this.agent = agent;
+}
   async run(args: { language: string; code: string }): Promise<string> {
     let runner: LanguageRunner;
     marked.setOptions({
@@ -200,6 +219,7 @@ export default class ExecuteCodeAction implements Action {
     }
     try {
       const output = await runner.runCode(args.code);
+      console.log(output);
       return output;
     } catch (error: any) {
       let errorInfo;

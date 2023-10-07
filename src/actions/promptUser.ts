@@ -1,7 +1,9 @@
+import Agent from '@/agents/agent';
 import { Action } from '../interfaces/action';
 import {prompt} from 'prompts';
 
 export default class PromptUserAction implements Action {
+    agent: Agent;
     name = 'prompt_user';
     description = 'Prompt the user for input based on a specified message and type. The choices argument is only required for select and multiselect types.';
     arguments = [
@@ -9,7 +11,10 @@ export default class PromptUserAction implements Action {
         { name: 'type', type: 'array', required: true, items: { type: 'string', enum: ['text', 'number', 'confirm', 'select', 'multiselect', 'autocomplete'] } },
         { name: 'choices', type: 'array', required: false, items: { type: 'string'} }, // only required for select and multiselect types
     ];
-
+// Constructor
+constructor(agent: Agent) {
+    this.agent = agent;
+  }
     async run(args: { message: string, type: string, choices?: any[] }): Promise<any> {
         // Destructure arguments
         const { message, type, choices } = args;

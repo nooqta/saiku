@@ -1,15 +1,20 @@
 // Importing necessary modules
+import Agent from "@/agents/agent";
 import { Action } from "@/interfaces/action";
 import pdf from 'pdf-parse';
 
 // PDFParseAction Class
 export default class PDFParseAction implements Action {
+  agent: Agent;
   name = 'parsePDF';
   description = 'Parses a PDF file from a URL or local file path and returns its content.';
   arguments = [
     { name: 'url', type: 'string', required: true, description: 'URL or local file path of the PDF' },
   ];
-
+// Constructor
+constructor(agent: Agent) {
+  this.agent = agent;
+}
   // Handle specific operations
   async run(args: any): Promise<any> {
     try {

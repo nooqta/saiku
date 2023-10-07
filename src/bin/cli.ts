@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 'use strict';
-const { program } = require('commander');
+const { Command } = require('commander');
+const program = new Command();
 const { readdirSync } = require('fs');
 const glob = require('glob'),
   path = require('path');
@@ -27,15 +28,13 @@ const defaultCmd = require(path.resolve(
 defaultCmd(program);
 
 const cmdDir = getDirectories(
-  path.resolve(process.mainModule?.path, 'commands').replace(/\\/g, '/')
+  path.join(process.mainModule?.path, 'commands').replace(/\\/g, '/')
 ).join(',');
-
 glob
   .globSync(
-    `${path.resolve(
+    `${path.join(
       process.mainModule?.path,
-      '..'
-    )}/commands/{${cmdDir}}/index.js`.replace(/\\/g, '/')
+    )}/commands/${cmdDir}/index.js`.replace(/\\/g, '/')
   )
   .forEach(function (file: any) {
     const cmd = require(path.resolve(file));

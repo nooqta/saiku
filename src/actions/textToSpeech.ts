@@ -2,8 +2,10 @@ import fetch from 'node-fetch';
 import fs from 'fs';
 import { Action } from '@/interfaces/action';
 import dotenv from 'dotenv'; 
+import Agent from '@/agents/agent';
 dotenv.config();
 class TextToSpeechAction implements Action {
+  agent: Agent;
   name = 'text_to_speech';
   description = 'Converts text to speech and returns the path to the generated audio file.';
   arguments = [
@@ -21,7 +23,10 @@ class TextToSpeechAction implements Action {
       default: true
     }
   ];
-
+// Constructor
+constructor(agent: Agent) {
+  this.agent = agent;
+}
   async run(args: { text: string, play: boolean }): Promise<string> {
     const { text } = args;
     let voice_id = '21m00Tcm4TlvDq8ikWAM';

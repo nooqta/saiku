@@ -1,8 +1,10 @@
 import { Action } from "../interfaces/action";
 import puppeteer from "puppeteer";
 import OpenAI from "openai";
+import Agent from "@/agents/agent";
 
 export default class ScrapeAndProcessURLAction implements Action {
+  agent: Agent;
   name = "scrape_and_process_url";
   description =
     "Scrape a URL and process its content based on the provided query. Use only when you need the content visible from the browser.";
@@ -10,7 +12,10 @@ export default class ScrapeAndProcessURLAction implements Action {
     { name: "url", type: "string", required: true },
     { name: "query", type: "string", required: true },
   ];
-
+// Constructor
+constructor(agent: Agent) {
+  this.agent = agent;
+}
   async run(args: { url: string; query: string }): Promise<any> {
     try {
       const { url, query } = args;

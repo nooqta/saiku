@@ -1,6 +1,7 @@
 import { Action } from "@/interfaces/action";
 import { createConnection, Connection } from 'mysql2/promise';
 import dotenv from 'dotenv'; 
+import Agent from "@/agents/agent";
 dotenv.config();
 
 interface QueryArgs {
@@ -10,6 +11,7 @@ interface QueryArgs {
 }
 
 export default class DatabaseQueryAction implements Action {
+  agent: Agent;
   name = "database_query";
   description = "Execute a database query";
   arguments = [
@@ -19,7 +21,10 @@ export default class DatabaseQueryAction implements Action {
   ];
 
   private connection: Connection | null = null;
-
+// Constructor
+constructor(agent: Agent) {
+  this.agent = agent;
+}
 
   async init(database: string) {
     const connectionOptions: any = {

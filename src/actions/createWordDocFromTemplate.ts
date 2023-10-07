@@ -4,20 +4,27 @@ import fs from "fs";
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
 import { Action } from "@/interfaces/action";
+import Agent from "@/agents/agent";
 
 const fsPromises = fs.promises;
 
 // EngineAction Class
 export default class CreateWordDocFromTemplateAction implements Action {
+  agent: Agent;
 
     name = 'createWordDocFromTemplate';
-    description = 'Creates  a .doc, .docx document using a Mircosoft Word file and object data for placeholders.';
+    description = 'Creates  a .doc, .docx document using a Mircosoft Word document and object data for placeholders.';
     arguments = [
       { name: 'templatePath', type: 'string', required: true, description: 'Path to the Word document template' },
       { name: 'data', type: 'object', required: true, description: 'Object data containing values for placeholders in the template' },
       { name: 'outputPath', type: 'string', required: true, description: 'Path to output the created or overwritten Word document' },
       { name: 'overwrite', type: 'boolean', required: false, description: 'Flag for overwriting the document, default is false' }
     ];
+
+  // Constructor
+  constructor(agent: Agent) {
+    this.agent = agent;
+  }
 
   // Overriding the run method to handle specific operations
   async run(args: any): Promise<any> {
