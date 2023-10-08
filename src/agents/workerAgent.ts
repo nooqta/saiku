@@ -27,7 +27,7 @@ class Agent implements IAgent {
     lastActionStatus: null, // 'success' or 'failure'
   }; // A basic representation of agent's memory. Can be replaced with a more sophisticated data structure.
   objectives: any[] = []; // Agent's objectives.
-  options: AgentOptions = { actionsPath: "" };
+  options: AgentOptions = { actionsPath: "", llm: "OpenAI" };
   currentObjective: any = null; // The current objective that the agent is trying to achieve.
   currentMessages: any[] = [];
 

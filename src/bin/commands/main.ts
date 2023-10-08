@@ -8,7 +8,7 @@ async function main(opts: any) {
   const { speech } = opts;
   // Initialize the agent
   // @todo: allow the user to specify multiple actions paths
-  const agent = new Agent({ actionsPath: "../actions" });
+  const agent = new Agent({ actionsPath: "../actions", ...opts });
   agent.options = { ...agent.options, ...opts };
   let userQuery = "";
   agent.systemMessage = agent.systemMessage ||

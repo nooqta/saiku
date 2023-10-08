@@ -4,6 +4,7 @@ export interface AgentOptions {
     actionsPath: string;
     systemMessage?: string;
     allowCodeExecution?: boolean;
+    llm: string;
     [key: string]: any;
   }
 

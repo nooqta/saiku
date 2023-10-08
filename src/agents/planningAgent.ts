@@ -30,7 +30,7 @@ class PlanningAgent implements IAgent {
     lastActionStatus: null, // 'success' or 'failure'
   }; // A basic representation of agent's memory. Can be replaced with a more sophisticated data structure.
   objectives: any[] = []; // Agent's objectives.
-  options: AgentOptions = { actionsPath: "" };
+  options: AgentOptions = { actionsPath: "", llm: "OpenAI" };
   currentObjective: any = null; // The current objective that the agent is trying to achieve.
   currentMessages: any[] = [];
 
@@ -42,7 +42,7 @@ class PlanningAgent implements IAgent {
     }
     this.actions = this.getFunctionsDefinitions();
     // We initialize the worker agent
-    this.worker = new Agent({ actionsPath: options.actionsPath });
+    this.worker = new Agent({ actionsPath: options.actionsPath, llm: options.llm|| 'OpenAI' });
   }
 
   async listen(): Promise<string> {

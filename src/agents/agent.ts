@@ -4,20 +4,19 @@ import path from "path";
 import { join } from "path";
 import { marked } from "marked";
 import TerminalRenderer from "marked-terminal";
-import OpenAI from "openai";
+import OpenAIModel from "../llms/openai";
 import dotenv from 'dotenv'; 
 import prompts from "prompts";
 import os from 'os';
 import { AgentOptions, IAgent } from "../interfaces/agent";
+import { LLM } from "@/interfaces/llm";
 
 dotenv.config();
 
 
 class Agent implements IAgent {
   // @todo: use llm instead and allow the user to specify the model
-  model = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
+  model: LLM;
   score = 100;
   messages: any[] = [];
   systemMessage = 'You are a helpful assistant';
@@ -28,11 +27,12 @@ class Agent implements IAgent {
     lastActionStatus: null,  // 'success' or 'failure'
   }; // A basic representation of agent's memory. Can be replaced with a more sophisticated data structure.
   objectives: any[] = []; // Agent's objectives.
-  options: AgentOptions = { actionsPath: "" };
+  options: AgentOptions = { actionsPath: "", llm: "OpenAI" };
   currentObjective: any = null; // The current objective that the agent is trying to achieve.
   currentMessages: any[] = [];
 
   constructor(options: AgentOptions) {
+    this.model = this.initLLM(options.llm);
     // Load actions from the specified actionsPath.
     this.loadFunctions(options.actionsPath);
     if (options.systemMessage) {
@@ -40,6 +40,25 @@ class Agent implements IAgent {
     }
     this.actions = this.getFunctionsDefinitions();
   }
+  initLLM(llm: string | undefined) {
+    let model;
+    switch (llm) {
+      case 'OpenAI':
+        model = new OpenAIModel({
+          apiKey: process.env.OPENAI_API_KEY,
+        })
+        break;
+      // @todo: add support for other llms
+      default:
+          model = new OpenAIModel({
+          apiKey: process.env.OPENAI_API_KEY,
+        })
+        break;
+    }
+    return model; 
+  }
+  
+  
 
   async listen(): Promise<string> {
     return await this.functions["speech_to_text"].run({});
@@ -51,12 +70,11 @@ class Agent implements IAgent {
         role: "system",
         content: `${this.systemMessage}\n${JSON.stringify(await this.sense())}`,
       };
-  
       const messages = [systemMessage, ...this.messages];
       this.currentMessages = messages;
       const functions = this.actions;
   
-      let decision = await this.model.chat.completions.create(
+      let decision = await this.model.predict(
         // @ts-ignore
         {
         messages:
@@ -83,7 +101,7 @@ class Agent implements IAgent {
 
     if(!useLocal) {
     // We request openai to suggest a text that can be spoken
-    const response = await this.model.chat.completions.create({
+    const response = await this.model.predict({
       messages: [
         {
           role: "system",
@@ -99,7 +117,7 @@ class Agent implements IAgent {
       max_tokens: 64,
       temperature: 0.8,
     }); // Add 'as any' to bypass the type checking error
-    text = response.choices[0].message.content || text;
+    text = response.text || text;
   }
     if (os.platform() === 'darwin') {
       // we use execute_code action and Siri to speak the text
@@ -155,6 +173,9 @@ class Agent implements IAgent {
           city: process.env.CITY,
           company: process.env.COMPANY,
           phone: process.env.PHONE,
+        },
+        api_services: {
+          weather: process.env.WEATHER_API_KEY,
         },
         ...this.memory,
       });
@@ -234,8 +255,8 @@ class Agent implements IAgent {
   async interact(): Promise<void> {
     const decision = await this.think();
 
-    const functionCall = decision.choices[0].message.function_call;
-    const content = decision.choices[0].message.content;
+    const functionCall = typeof decision.text !== 'string'? decision.text: null;
+    const content = typeof decision.text === 'string'? decision.text: null;
 
     if (content) {
       this.messages.push({
