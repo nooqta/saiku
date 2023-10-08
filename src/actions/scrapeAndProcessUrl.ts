@@ -10,7 +10,8 @@ export default class ScrapeAndProcessURLAction implements Action {
     "Scrape a URL and process its content based on the provided query. Use only when you need the content visible from the browser.";
   arguments = [
     { name: "url", type: "string", required: true },
-    { name: "query", type: "string", required: true },
+    { name: "query", type: "string", description: "The query to process",
+    required: true },
   ];
 // Constructor
 constructor(agent: Agent) {
@@ -42,7 +43,6 @@ constructor(agent: Agent) {
 
       // Process the content with the provided logic
       const processedContent = await processContent(openai, page, query);
-
       // Close the browser
       await browser.close();
       // Return the processed content
@@ -58,6 +58,7 @@ async function processContent(
   page: any,
   query = "What is the main content of this page?"
 ) {
+
   // Clean the HTML
   await cleanHTML(page);
 

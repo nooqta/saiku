@@ -11,7 +11,7 @@ class TextSummarizer {
   async incrementalSummarizeText(options: any): Promise<string> {
     console.log("Incrementally summarizing text...");
     const { text, model = "gpt-3.5-turbo-16k" } = options;
-    let { maxTokens = 4000 } = options;
+    let { maxTokens = 3800 } = options;
 
     const textProcessingTool = new TextProcessingTool();
     // Initialize the OpenAI object
@@ -28,7 +28,7 @@ class TextSummarizer {
     let initialSummaries = [];
     const totalTokensLimit = 4000;
     let totalTokensUsed = 0;
-    const sectionSummaryPrompt = ``;
+    const sectionSummaryPrompt = `Summarize the following text while retaining as much of the original content and meaning as possible:`;
     let chunksLeft = chunks.length;
 
     for (const chunk of chunks) {
@@ -40,10 +40,8 @@ class TextSummarizer {
       maxTokens = Math.floor((totalTokensLimit - totalTokensUsed) / chunksLeft);
       totalTokensUsed += maxTokens;
 
-      console.log(`Max tokens for this chunk: ${maxTokens}`);
-
       const response = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo-16k",
+        model: "gpt-3.5-turbo",
         messages: [
           { role: "system", content: sectionSummaryPrompt },
           { role: "user", content: chunk },
@@ -58,7 +56,22 @@ class TextSummarizer {
     }
 
     const combinedSummary = initialSummaries.join("---\n");
-    return combinedSummary;
+    // Do a final summarization of the combined summary
+    const finalSummary = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo-16k",
+      messages: [
+        { 
+            role: "system", 
+            content: "Summarize the following text while retaining as much of the original content and meaning as possible:"
+    },
+        { role: "user", content: combinedSummary },
+      ],
+      max_tokens: 4000,
+    });
+
+
+
+    return finalSummary.choices[0]?.message?.content?.trim() || "";
   }
 }
 

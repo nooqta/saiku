@@ -10,6 +10,7 @@ import prompts from "prompts";
 import os from 'os';
 import { AgentOptions, IAgent } from "../interfaces/agent";
 import { LLM } from "@/interfaces/llm";
+import { TextProcessingTool } from "../tools/text-processing";
 
 dotenv.config();
 
@@ -92,8 +93,10 @@ class Agent implements IAgent {
       return decision;
       
     } catch (error) {
-      console.log(`An error occurred: ${error}`)
-      return error;
+      // @ts-ignore
+      console.log(`An error occurred: ${error.message}`)
+      // @ts-ignore
+      return error.message;
     }
   }
 
@@ -304,14 +307,25 @@ class Agent implements IAgent {
       catch (error) {
         result = JSON.stringify(error);
       }
+
+
+    const textProcessingTool = new TextProcessingTool();
+    // Initialize the OpenAI object
+
+    const chunks = await textProcessingTool.run({
+      action: "split-text",
+      text: result,
+      maxTokens: 3800,
+      model: "gpt-3.5-turbo",
+    });
       
       this.messages.push({
         role: "function",
         name: actionName,
-        content: result,
+        content: chunks.length > 1? await this.functions['text_summarizer'].run({text: result}): result, 
       });
 
-      return this.interact();
+      return await this.interact();
     }
   }
 
