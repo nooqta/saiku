@@ -31,6 +31,7 @@ class Agent implements IAgent {
   options: AgentOptions = { actionsPath: "", llm: "OpenAI" };
   currentObjective: any = null; // The current objective that the agent is trying to achieve.
   currentMessages: any[] = [];
+  services: any = {};
 
   constructor(options: AgentOptions) {
     this.model = this.initLLM(options.llm);

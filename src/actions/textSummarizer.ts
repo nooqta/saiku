@@ -11,7 +11,7 @@ class TextSummarizer {
   async incrementalSummarizeText(options: any): Promise<string> {
     console.log("Incrementally summarizing text...");
     const { text, model = "gpt-3.5-turbo-16k" } = options;
-    let { maxTokens = 3800 } = options;
+    let { maxTokens = 2000 } = options;
 
     const textProcessingTool = new TextProcessingTool();
     // Initialize the OpenAI object

@@ -50,3 +50,4 @@ tmp
 *.wav
 *.mp3
 specs.txt
+.wwebjs_cache
