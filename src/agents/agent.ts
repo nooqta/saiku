@@ -146,7 +146,7 @@ class Agent implements IAgent {
     );
     actionFiles.forEach((file) => {
       const actionClass = require(path.join(actionsPath, file)).default;
-      const actionInstance: Action = new actionClass();
+      const actionInstance: Action = new actionClass(this);
       this.functions[actionInstance.name] = actionInstance;
     });
   }

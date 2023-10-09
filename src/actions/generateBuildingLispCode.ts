@@ -3,6 +3,7 @@ import { Action } from "@/interfaces/action";
 const path = require('path');
 const { spawn } = require('child_process');
 const fs = require('fs');
+import { AutoLISPGenerator } from "../tools/autolisp-generator";
 
 type BuildingSpecs = {
     base: { width: number, length: number, height: number },
@@ -14,9 +15,9 @@ type BuildingSpecs = {
 
 };
 
-export default class GenerateBuildingImageAction implements Action {
+export default class GenerateBuildingLispCodeAction implements Action {
     agent: Agent;
-    name = "generateBuildingImage";
+    name = "generateBuildingLispCode";
     description = "Generate a AutoLisp file of a building based on specifications in a text file";
     arguments = [
         { name: "filePath", type: "string", required: true, description: "Path to the text file containing building specifications." },
@@ -27,14 +28,13 @@ export default class GenerateBuildingImageAction implements Action {
     }
 
     async run(args: any) {
-
+        try {
         const { filePath } = args;
 
         // Read and parse the text file
         const fileContent = fs.readFileSync(filePath, "utf8");
-        console.log(fileContent);
+        
         const buildingSpecs = this.parseBuildingSpecs(fileContent);
-        console.log(buildingSpecs);
         // Generate AutoLISP code
         const autoLISPCode = this.generateAutoLISP(buildingSpecs);
 
@@ -47,8 +47,12 @@ export default class GenerateBuildingImageAction implements Action {
         // Save the image
         // const imagePath = this.saveImage(image, imageFile);
 
-        return `Image saved at: drawing.lsp`;
+        return `File saved at: drawing.lsp`;
+    } catch (error: any) {
+        console.log(error);
+        return JSON.stringify(error);
     }
+}
 
     saveImage(imageBuffer: Buffer, fileName: string): string {
         // Determine the file path
@@ -60,12 +64,8 @@ export default class GenerateBuildingImageAction implements Action {
         return filePath;
     }
     generateAutoLISP(specs: any) {
-        // Assume a function to generate AutoLISP code based on specifications
-        // Replace with your actual code to generate AutoLISP code
-        return `
-            ; AutoLISP code to draw the building based on specs
-            ; ...
-        `;
+        const generator = new AutoLISPGenerator();
+        return generator.generateAutoLISP(specs);
     }
 
     parseBuildingSpecs(fileContent: string): BuildingSpecs {
@@ -76,7 +76,7 @@ export default class GenerateBuildingImageAction implements Action {
         lines.forEach(line => {
             line = line.trim();
             if (line.startsWith('-')) {
-                const sectionName = line.slice(1).trim().toLowerCase();
+                const sectionName = line.slice(1).trim().toLowerCase().replace(':', '');
                 currentSection = sectionName;
                 buildingSpecs[currentSection] = {};
             } else if (currentSection && line.includes(':')) {
