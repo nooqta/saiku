@@ -120,19 +120,41 @@ cp .env.example .env
 Edit the `.env` file to include your specific information:
 
 ```
+# OpenAI
 OPENAI_API_KEY=
-OPENAI_MODEL=
+OPENAI_MODEL=gpt-3.5-turbo
+# Eleven Labs
+ELEVENLABS_API_KEY=
+# Database related
 DB_HOST=
 DB_USER=
 DB_PASSWORD=
-EMAIL_PASS=
+# Email related
+EMAIL_SERVICE=
 EMAIL_USER=
 DISPLAY_FROM_EMAIL=
+EMAIL_PASS=
+# User related
 USER=
 COMPANY=
 COUNTRY=
 CITY=
 PHONE=
+LATITUDE=
+LONGITUDE=
+# Twilio
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+# Weather API
+WEATHER_API_KEY=
+# Stability AI
+STABILITY_API_KEY=
+# GITLAB
+GITLAB_GRAPHQL_ENDPOINT=
+GITLAB_PERSONAL_ACCESS_TOKEN=
+GITLAB_USERNAME=
+GITLAB_VERSION=
+GITLAB_API_VERSION=
 ```
 
 ### Command Line Options
