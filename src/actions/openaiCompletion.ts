@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 import { Action } from '@/interfaces/action';
-import dotenv from 'dotenv'; 
 import Agent from '@/agents/agent';
+import dotenv from 'dotenv'; 
 dotenv.config();
 
 export default class OpenAICompletionAction implements Action {

@@ -180,6 +180,11 @@ class Agent implements IAgent {
         },
         api_services: {
           weather: process.env.WEATHER_API_KEY,
+          gitlab: {
+            version: process.env.GITLAB_VERSION,
+            username: process.env.GITLAB_USERNAME,
+            api_version: process.env.GITLAB_API_VERSION,
+          }
         },
         ...this.memory,
       });
