@@ -6,11 +6,12 @@ import { marked } from "marked";
 import TerminalRenderer from "marked-terminal";
 import OpenAIModel from "../llms/openai";
 import dotenv from 'dotenv'; 
-import prompts from "prompts";
 import os from 'os';
 import { AgentOptions, IAgent } from "../interfaces/agent";
 import { LLM } from "@/interfaces/llm";
-import { TextProcessingTool } from "../tools/text-processing";
+import { GoogleVertexAI } from "../llms/googleVertexAI";
+import Ollama from "../llms/ollama";
+import { HuggingFace } from "../llms/huggingFace";
 
 dotenv.config();
 
@@ -34,29 +35,50 @@ class Agent implements IAgent {
   services: any = {};
 
   constructor(options: AgentOptions) {
-    this.model = this.initLLM(options.llm);
-    // Load actions from the specified actionsPath.
-    this.loadFunctions(options.actionsPath);
     if (options.systemMessage) {
       this.systemMessage = options.systemMessage;
     }
+    this.model = this.initLLM(options.llm);
+    // Load actions from the specified actionsPath.
+    this.loadFunctions(options.actionsPath);
     this.actions = this.getFunctionsDefinitions();
   }
   initLLM(llm: string | undefined) {
     let model;
     switch (llm) {
-      case 'OpenAI':
-        model = new OpenAIModel({
+      case 'openai':
+        model = new OpenAIModel(this,{
           apiKey: process.env.OPENAI_API_KEY,
         })
+        break;
+      case 'vertexai':
+        model = new GoogleVertexAI(this,{
+          projectId: process.env.GOOGLE_PROJECT_ID,
+          apiEndpoint: process.env.GOOGLE_API_ENDPOINT,
+          modelId: process.env.GOOGLE_MODEL_ID,
+        });
+        break;
+      case 'ollama':
+        model = new Ollama(this,{
+          baseURL: process.env.OLLAMA_BASE_URL,
+          model: process.env.OLLAMA_MODEL,
+        });
+        break;
+      case 'huggingface':
+        model = new HuggingFace(this,{
+          apiKey: process.env.HUGGINGFACE_API_KEY,
+          model: process.env.HUGGINGFACE_MODEL,
+        });
         break;
       // @todo: add support for other llms
       default:
-          model = new OpenAIModel({
+          model = new OpenAIModel(this,{
           apiKey: process.env.OPENAI_API_KEY,
+          
         })
         break;
     }
+    
     return model; 
   }
   
@@ -75,10 +97,10 @@ class Agent implements IAgent {
       const messages = [systemMessage, ...this.messages];
       this.currentMessages = messages;
       const functions = this.actions;
-  
-      let decision = await this.model.predict(
+
+      let decision = await this.model.predict({
         // @ts-ignore
-        {
+          prompt: this.currentMessages.findLast((message:any) => message.role === 'user')?.content,
         messages:
           this.currentMessages.length > 10
             ? [
@@ -86,7 +108,7 @@ class Agent implements IAgent {
                 ...this.currentMessages.slice(this.currentMessages.length - 10),
               ]
             : this.currentMessages,
-        model: process.env.OPENAI_MODEL || "gpt-3.5-turbo",
+        model: this.model.name,
         ...(useFunctionCalls ? { functions: functions } : {})
   
       });
@@ -172,7 +194,7 @@ class Agent implements IAgent {
         cwd: process.cwd(),
         // provide information about the current user
         current_user: {
-          name: process.env.USER,
+          name: process.env.ME,
           country: process.env.COUNTRY,
           city: process.env.CITY,
           company: process.env.COMPANY,
@@ -262,77 +284,7 @@ class Agent implements IAgent {
     }
   }
   async interact(): Promise<void> {
-    const decision = await this.think();
-
-    const functionCall = typeof decision.text !== 'string'? decision.text: null;
-    const content = typeof decision.text === 'string'? decision.text: null;
-
-    if (content) {
-      this.messages.push({
-        role: "assistant",
-        content,
-      });
-      marked.setOptions({
-        renderer: new TerminalRenderer(),
-      });
-      if(['both', 'output'].includes(this.options.speech)) {
-        await this.speak(content);
-      }
-      console.log(marked(content));
-    } else {
-      let actionName = functionCall?.name ?? "";
-      let args = functionCall?.arguments ?? "";
-      let result: any = "";
-      // We avoid executing if the last action is the same as the current action
-      if (this.memory.lastAction === actionName && this.memory.lastActionStatus === 'failure') {
-        this.updateMemory({
-          lastAction: null,
-          lastActionStatus: null,
-        });
-        return;
-      }
-      try {
-        args = JSON.parse(functionCall?.arguments ?? "");
-        if(!this.options.allowCodeExecution) {
-          // request to execute code
-          const { answer } = await prompts({
-            type: "confirm",
-            name: "answer",
-            message: `Do you want to execute the code?`,
-            initial: true
-          });
-          if(!answer) {
-            result = "Code execution cancelled for current action only";
-          } else {
-            result = await this.act(actionName, args);
-          }
-        } else {
-          result = await this.act(actionName, args);
-        }
-      } 
-      catch (error) {
-        result = JSON.stringify(error);
-      }
-
-
-    const textProcessingTool = new TextProcessingTool();
-    // Initialize the OpenAI object
-
-    const chunks = await textProcessingTool.run({
-      action: "split-text",
-      text: result,
-      maxTokens: 3800,
-      model: "gpt-3.5-turbo",
-    });
-      
-      this.messages.push({
-        role: "function",
-        name: actionName,
-        content: chunks.length > 1? await this.functions['text_summarizer'].run({text: result}): result, 
-      });
-
-      return await this.interact();
-    }
+    await this.model.interact();
   }
 
   getFunctionsDefinitions(): any {
