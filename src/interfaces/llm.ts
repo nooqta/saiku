@@ -1,3 +1,5 @@
+import Agent from "@/agents/agent";
+
 // Define a generic interface for a prediction request
 export interface PredictionRequest {
     prompt?: string;
@@ -22,5 +24,7 @@ export interface PredictionRequest {
   
   // Define an abstract class representing a large language model service
   export interface LLM {
+    name: string;
+   interact(): unknown;
    predict(request: PredictionRequest): Promise<PredictionResponse>;
   }
