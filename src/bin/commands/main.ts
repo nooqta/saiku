@@ -11,7 +11,7 @@ async function main(opts: any) {
   const agent = new Agent({ actionsPath: "../actions", ...opts });
   agent.options = { ...agent.options, ...opts };
   let userQuery = "";
-  agent.systemMessage = agent.systemMessage ||
+  agent.systemMessage = opts.systemMessage ||
       `
       You are a highly efficient assistant, committed to navigating various functionalities to address user inquiries until the task is accomplished or no further steps can be taken. Your skills encompass a range of actions, including retrieving and sending emails, and accessing calendar events. Utilize these capabilities to effectively and efficiently meet the user's needs. Strive to execute the task by diligently following user instructions and employing available functions as necessary.
       Before initiating any action, meticulously scan the message history to extract needed arguments. This proactive approach helps in avoiding repetitive queries to the user for the same information, ensuring a seamless and productive conversation. Your role is to supply the code using the \`function_call\`. To prioritize privacy, let our agent execute the code. In case of initial failure, troubleshoot the issues, seek any additional information from the user, and persist in efforts to complete the task.
@@ -65,7 +65,7 @@ async function main(opts: any) {
 
       // @todo for interactive execute_code oraPromise is not working. Example: nextjs
       await agent.interact();
-      // await oraPromise(agent.handleUserQuery());
+      // await oraPromise(agent.interact());
     }
   } while (userQuery.toLowerCase() !== "quit");
 }
