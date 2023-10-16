@@ -19,7 +19,8 @@ export default class SpeechToTextAction implements Action {
   agent: Agent;
   name = "speech_to_text";
   description = "Transcribe audio to text";
-  arguments = [];
+  arguments = [{ name: "audioFilename", type: "string", required: false }];
+
   
   private audioFilename = 'recording.wav';
 
@@ -31,10 +32,13 @@ export default class SpeechToTextAction implements Action {
 constructor(agent: Agent) {
   this.agent = agent;
 }
-  async run(args = {}): Promise<string> {
+  async run(args: {audioFilename?: string} = {}): Promise<string> {
     await this.init();
-    await this.recordAudio(this.audioFilename);
-    const transcription = await this.transcribeAudio(this.audioFilename);
+    const audioFilename = args.audioFilename || this.audioFilename;
+    if (!args.audioFilename) {
+      await this.recordAudio(audioFilename);
+    }
+    const transcription = await this.transcribeAudio(audioFilename);
     console.log('Transcription:', transcription);
     return transcription;
   }
