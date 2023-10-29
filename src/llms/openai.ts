@@ -3,6 +3,10 @@ import { PredictionRequest, PredictionResponse, LLM } from "@/interfaces/llm";
 import { TextProcessingTool } from "../tools/text-processing";
 import OpenAI  from "openai";
 import prompts from "prompts";
+import dotenv from "dotenv";
+
+// Load environment variables from .env file
+dotenv.config();
 
 interface OpenAIPredictionRequest extends PredictionRequest {
     model: string;
@@ -105,7 +109,6 @@ interface OpenAIPredictionRequest extends PredictionRequest {
   
       const textProcessingTool = new TextProcessingTool();
       // Initialize the OpenAI object
-  
       const chunks = await textProcessingTool.run({
         action: "split-text",
         text: result,
@@ -116,7 +119,8 @@ interface OpenAIPredictionRequest extends PredictionRequest {
         this.agent.messages.push({
           role: "function",
           name: actionName,
-          content: chunks.length > 1? await this.agent.functions['text_summarizer'].run({text: result}): result, 
+          // content: chunks.length > 1? await this.agent.functions['text_summarizer'].run({text: result}): result, 
+          content: result, 
         });
   
         return await this.interact();
