@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3Dmol.js Visualization</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+
+</head>
+
+<body class="bg-light">
+
+<div class="container my-5">
+    <div class="row">
+        <!-- Chat Input, Button and Messages -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 overflow-auto">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Chat with Agent</h5>
+                    <div class="input-group mb-2">
+                        <input type="text" id="userInput" class="form-control" placeholder="Enter your request" onkeydown="if(event.key === 'Enter') sendAgentRequest()">
+                        <div class="input-group-append">
+                            <button onclick="sendAgentRequest()" id="sendBtn" class="btn btn-primary">Send</button>
+                        </div>
+                    </div>
+                    <div id="messages" class="mt-3 overflow-auto" style="flex: 1;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3D Molecule Preview-->
+        <div class="col-md-6 mb-4">
+    <div class="card h-100 overflow-auto">
+        <div class="card-body">
+            <h5 class="card-title">3D Molecule Preview</h5>
+            <iframe id="moleculeViewer" src="https://3Dmol.org/viewer.html?pdb=4KW4" width="100%" height="300px" frameborder="0"></iframe>
+        </div>
+    </div>
+            <!-- <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Code Editor</h5>
+                    <div id="codeEditor" style="width: 100%; height: 300px;"></div>
+                </div>
+            </div> -->
+        </div>
+    </div>
+
+   
+</div>
+
+<script>
+    const socket = io.connect('http://localhost:3000');
+    const messagesContainer = document.getElementById('messages');
+    const element_id = 'moleculePreview';
+
+    const messages = [
+    {
+    'role': 'system',
+    'content': `You are the 3dMol agent. Build the viewer URL as follows:
+
+1. **Structure**: Use a single structure identifier like pdb=[PDB ID], cid=[PubChem CID], or url=[URL]. Example: https://3Dmol.org/viewer.html?pdb=4KW4. For URLs, the format can be inferred from the extension or provided with the type parameter.
+
+2. **Atom Selection**: By default, all atoms are selected. You can specify atom groups with select=[AtomSpec], where AtomSpec is formatted with properties in a semi-colon separated list. Example: select=resn:TRP;chain:B or select=resi:19,23,26;chain:B.
+
+3. **Style**: Use style=[StyleSpec], where StyleSpec can be line (default), cross, cartoon, stick, sphere, or a combination using a semi-colon separated list. Additional properties are set using a comma-separated list after a colon, with ~ for key-value pairs. Example: style=cartoon:color~spectrum;stick:radius~0.25.
+
+4. **Surface**: Add surfaces with surface=[SurfaceSpec], setting properties like opacity and color. Example: surface=opacity:0.8;colorscheme:whiteCarbon.
+
+5. **Label Residues**: Label with labelres=[LabelSpec]. Example: labelres=backgroundOpacity:0.8;fontSize:14.
+
+Combine these specifiers using '&' and they are read in order. Default style is "stick" if none is given.`
+}
+
+    ];
+    // const editor = ace.edit("codeEditor");
+    // editor.setTheme("ace/theme/monokai");
+    // editor.session.setMode("ace/mode/javascript");
+
+    socket.on('agent_response', async (data) => {
+        console.log(`agent_response: ${data}`);
+        messages.push({
+            'role': 'assistant',
+            'content': data
+        });
+        // editor.setValue(data);
+        // If data contains a molecule name or CID, construct the viewer URL
+        // Assuming you have an iframe with the ID 'moleculeViewer'
+        // Extract the 3Dmol viewer URL from the response
+    const urlRegex = /(https:\/\/3Dmol\.org\/viewer\.html\?[a-zA-Z0-9&=;~:_\-]+)/;
+    const match = data.match(urlRegex);
+    
+    if (match && match[1]) {
+        let viewerURL = match[1];
+
+        // Check if any style has been applied, if not add default "stick"
+        if (!viewerURL.includes("&style=")) {
+            viewerURL += "&style=stick";
+        }
+        const viewerFrame = document.getElementById('moleculeViewer');
+    viewerFrame.src = viewerURL; // Set the iframe's source to the 3Dmol viewer URL
+} else {
+    appendMessage('agent', data);
+    }
+        document.getElementById('sendBtn').innerHTML = 'Send';
+        document.getElementById('sendBtn').disabled = false;
+        document.getElementById('userInput').value = '';
+    });
+
+
+    function sendAgentRequest() {
+        const sendBtn = document.getElementById('sendBtn');
+        sendBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Sending...';
+        sendBtn.disabled = true;
+
+        const userRequest = document.getElementById('userInput').value;
+        messages.push({
+            'role': 'user',
+            'content': userRequest
+        });
+        appendMessage('user', userRequest);
+        socket.emit('agent_request', JSON.stringify(messages));
+    }
+    function appendMessage(role, message) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = role.toLowerCase();
+        messageDiv.innerHTML = marked.parse(`${role}: ${message}`);;
+        messagesContainer.appendChild(messageDiv);
+    }
+</script>
+</body>
+</html>
