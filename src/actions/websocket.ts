@@ -54,15 +54,20 @@ export default class WebsocketAction implements Action {
         });
     });
 
-    server.listen(3000, () => {
-        console.log('Websocket server started on *:3000');
-    });
+    try {
+      server.listen(3000, () => {
+          console.log('Websocket server started on *:3000');
+        });
+      } catch (error) {
+      }
+      
 
       return `Websocket server started on *:3000`;
 
     } catch (err) {
       console.error(err);
-      throw new Error("Failed to start the websocket server");
+      return ('Websocket server already running');
+      // throw new Error("Failed to start the websocket server");
     }
   }
 

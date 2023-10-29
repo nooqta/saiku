@@ -37,7 +37,7 @@ export class SocketAdapterModel implements LLM {
         content: opts.systemMessage || "You are a helpful assistant",
       },
     ];
-    this.setupSocket();
+    // this.setupSocket();
   }
 
   private setupSocket() {
