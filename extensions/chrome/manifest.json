@@ -1,0 +1,33 @@
+{
+  "manifest_version": 2,
+  "minimum_chrome_version": "116",
+  "name": "Saiku Agent Proxy",
+  "version": "1.0",
+  "description": "An extension that communicates with an agent via a socket server",
+  "permissions": [
+    "http://localhost:4000/",
+    "http://*/*", "https://*/*",
+    "<all_urls>",
+    "activeTab",
+    "tabs",
+    "storage",
+    "downloads",
+    "webRequest",
+    "webRequestBlocking"
+  ],
+  "background": {
+    "scripts": ["lib/socket.io.min.js", "js/background.js"],
+    "persistent": true
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://chat.openai.com/*"],
+      "js": ["js/openai_content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "options_page": "options.html",
+  "browser_action": {
+    "default_icon": "assets/icons/socket-inactive.png"
+  }
+}
