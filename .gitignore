@@ -51,3 +51,4 @@ tmp
 *.mp3
 specs.txt
 .wwebjs_cache
+credentials.json
