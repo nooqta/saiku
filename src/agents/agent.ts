@@ -12,6 +12,7 @@ import { LLM } from "@/interfaces/llm";
 import { GoogleVertexAI } from "../llms/googleVertexAI";
 import Ollama from "../llms/ollama";
 import { HuggingFace } from "../llms/huggingFace";
+import { SocketAdapterModel } from "../llms/adapters/socketAdapter";
 
 dotenv.config();
 
@@ -69,6 +70,9 @@ class Agent implements IAgent {
           apiKey: process.env.HUGGINGFACE_API_KEY,
           model: process.env.HUGGINGFACE_MODEL,
         });
+        break;
+      case 'socket':
+        model = new SocketAdapterModel(this, this.options);
         break;
       // @todo: add support for other llms
       default:
