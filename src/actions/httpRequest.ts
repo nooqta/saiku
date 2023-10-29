@@ -14,6 +14,10 @@ export default class HTTPRequestAction implements Action {
       { name: 'method', type: 'string', required: true, description: 'HTTP Method' },
       { name: 'headers', type: 'object', required: false, description: 'HTTP Headers' },
       { name: 'data', type: 'object', required: false, description: 'Request Body' },
+      { name: 'responseProperties', type: 'array', items: {
+        type: 'string'
+      }, required: false, description: 'Specific properties to return from the response data' },
+
     ];
     
 // Constructor
@@ -31,8 +35,19 @@ constructor(agent: Agent) {
         data: args.data,
       });
 
-      // Return the response from the API request
-      return JSON.stringify(response.data);
+       // Extract specified properties from the response data if defined
+       if (args.responseProperties && Array.isArray(args.responseProperties)) {
+        const selectedData: any = {};
+        for (const prop of args.responseProperties) {
+          if (response.data[prop] !== undefined) {
+            selectedData[prop] = response.data[prop];
+          }
+        }
+        return JSON.stringify(selectedData);
+      } else {
+        // If no properties specified, return the whole response
+        return JSON.stringify(response.data);
+      }
     } catch (error: any) {
       // Handle errors and return an error message
       return JSON.stringify(error);

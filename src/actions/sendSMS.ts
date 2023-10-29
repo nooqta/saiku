@@ -1,7 +1,8 @@
 import Agent from "@/agents/agent";
 import { Action } from "@/interfaces/action";
 import { Twilio } from "twilio";
-
+import dotenv from 'dotenv'; 
+dotenv.config();
 export default class SendSMSTwilioAction implements Action {
     agent: Agent;
     name = "sendSMSTwilio";
