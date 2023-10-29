@@ -5,6 +5,7 @@ export interface Action {
     description: string;
     arguments: Argument[];
     agent: Agent;
+    dependencies?: string[];
     run(args: any): Promise<string>;
   }
   
