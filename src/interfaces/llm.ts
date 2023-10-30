@@ -25,6 +25,6 @@ export interface PredictionRequest {
   // Define an abstract class representing a large language model service
   export interface LLM {
     name: string;
-   interact(): unknown;
+   interact(useDelegate?: boolean): Promise<string|void>;
    predict(request: PredictionRequest): Promise<PredictionResponse>;
   }

@@ -4,6 +4,7 @@ import { TextProcessingTool } from "../tools/text-processing";
 import OpenAI  from "openai";
 import prompts from "prompts";
 import dotenv from "dotenv";
+import { use } from "marked";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -55,7 +56,7 @@ interface OpenAIPredictionRequest extends PredictionRequest {
       }
     }
 
-    async interact(): Promise<void> {
+    async interact(useDelegate = false): Promise<void> {
       const decision = await this.agent.think();
 
       const functionCall = typeof decision.text !== 'string'? decision.text: null;
@@ -66,11 +67,14 @@ interface OpenAIPredictionRequest extends PredictionRequest {
           role: "assistant",
           content,
         });
-        
+        if (useDelegate) {
+          return content;
+        } else {
         if(['both', 'output'].includes(this.agent.options.speech)) {
           await this.agent.speak(content);
         }
         this.agent.displayMessage(content);
+      }
       } else {
         let actionName = functionCall?.name ?? "";
         let args = functionCall?.arguments ?? "";
@@ -123,7 +127,7 @@ interface OpenAIPredictionRequest extends PredictionRequest {
           content: result, 
         });
   
-        return await this.interact();
+        return await this.interact(useDelegate);
   
       }
     }

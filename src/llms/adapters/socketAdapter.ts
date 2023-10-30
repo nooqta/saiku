@@ -37,7 +37,7 @@ export class SocketAdapterModel implements LLM {
         content: opts.systemMessage || "You are a helpful assistant",
       },
     ];
-    // this.setupSocket();
+    this.setupSocket();
   }
 
   private setupSocket() {
@@ -84,7 +84,7 @@ export class SocketAdapterModel implements LLM {
     });
   }
 
-  async interact(): Promise<void> {
+  async interact(): Promise<string|void> {
     // @ts-ignore
     const { oraPromise } = await requiresm('ora');
 

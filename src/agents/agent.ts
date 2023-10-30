@@ -287,8 +287,8 @@ class Agent implements IAgent {
       ...args
     }
   }
-  async interact(): Promise<void> {
-    await this.model.interact();
+  async interact(delegate?: boolean): Promise<void|string> {
+    return await this.model.interact(delegate);
   }
 
   getFunctionsDefinitions(): any {
