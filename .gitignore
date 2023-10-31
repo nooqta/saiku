@@ -52,3 +52,4 @@ tmp
 specs.txt
 .wwebjs_cache
 credentials.json
+.vercel
