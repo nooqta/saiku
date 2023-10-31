@@ -1,7 +1,7 @@
 'use client'
 
-import { useChat, type Message } from 'ai/react'
-
+import { type Message } from 'ai/react'
+import  {useChat } from '@/lib/hooks/use-chat'
 import { cn } from '@/lib/utils'
 import { ChatList } from '@/components/chat-list'
 import { ChatPanel } from '@/components/chat-panel'
@@ -34,26 +34,18 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
   )
   const [previewTokenDialog, setPreviewTokenDialog] = useState(IS_PREVIEW)
   const [previewTokenInput, setPreviewTokenInput] = useState(previewToken ?? '')
-  const { messages, append, reload, stop, isLoading, input, setInput } =
+  const { messages, append, reload, stop, isLoading, input, setInput, sendAgentRequest } =
     useChat({
+      // @ts-ignore
       initialMessages,
       id,
-      body: {
-        id,
-        previewToken
-      },
-      onResponse(response) {
-        if (response.status === 401) {
-          toast.error(response.statusText)
-        }
-      }
     })
   return (
     <>
       <div className={cn('pb-[200px] pt-4 md:pt-10', className)}>
-        {messages.length ? (
+        {messages.length > 1 ? (
           <>
-            <ChatList messages={messages} />
+            <ChatList messages={messages.filter(msg => msg.role != 'system')} />
             <ChatScrollAnchor trackVisibility={isLoading} />
           </>
         ) : (
@@ -64,11 +56,14 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
         id={id}
         isLoading={isLoading}
         stop={stop}
+        // @ts-ignore
         append={append}
+        // @ts-ignore
         reload={reload}
         messages={messages}
         input={input}
         setInput={setInput}
+        sendAgentRequest={sendAgentRequest}
       />
 
       <Dialog open={previewTokenDialog} onOpenChange={setPreviewTokenDialog}>
