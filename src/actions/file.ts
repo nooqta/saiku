@@ -36,7 +36,7 @@ export default class FileAction implements Action {
 
             // Display a success message
             console.log(`Content has been successfully saved to ${args.filename}`);
-            return args.filename;
+            return `Content has been successfully saved to ${args.filename}`;
 
         } else if (args.operation === 'read') {
             // Check if file exists
@@ -49,7 +49,7 @@ export default class FileAction implements Action {
 
             // Display a success message
             console.log(`Content has been successfully read from ${args.filename}`);
-            return fileContent;
+            return `Here is the content: ${fileContent}`;
 
         } else {
             throw new Error(`Invalid operation: ${args.operation}`);

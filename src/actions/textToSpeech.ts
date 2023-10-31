@@ -35,7 +35,7 @@ constructor(agent: Agent) {
       // we use execute_code action and Siri to speak the text
       await this.agent.functions["execute_code"].run({ code: `say "${text}"`, language: 'applescript' });
       // @todo: add support for other platforms
-      return text;
+      return `text spoken: ${text}`;
     }
     let voice_id = '21m00Tcm4TlvDq8ikWAM';
     const url = `https://api.elevenlabs.io/v1/text-to-speech/${voice_id}/stream`;
@@ -87,7 +87,7 @@ constructor(agent: Agent) {
           await exec(`start ${audioFilePath}`);
         }
       // }      
-      return audioFilePath;
+      return `text spoken using: ${audioFilePath}`;
 
     } catch (error) {
       return JSON.stringify(error);

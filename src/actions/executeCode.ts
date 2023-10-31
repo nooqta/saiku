@@ -101,7 +101,10 @@ class ShellRunner implements LanguageRunner {
       let stdout = "";
       let stderr = "";
 
-      child.stdout.on("data", (data) => stdout += data.toString());  // Correct event handler attachment
+      child.stdout.on("data", (data) => {
+        stdout += data.toString()
+        console.log(data.toString())
+      });  // Correct event handler attachment
       child.stderr.on("data", (data) => stderr += data.toString());  // Capture stderr as well
 
       child.on("error", (error) => reject(error));
@@ -220,7 +223,7 @@ constructor(agent: Agent) {
     try {
       const output = await runner.runCode(args.code);
       console.log(output);
-      return output;
+      return `output is: ${output}`;
     } catch (error: any) {
       let errorInfo;
       if (typeof error === "string") {

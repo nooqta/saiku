@@ -35,6 +35,9 @@ async function main(opts: any) {
   ;
   master.worker = agent;
   let message = `_Hello, I am your assistant. I am here to help you with your tasks._`;
+  const warningMessage = `__Warning:__ This is an experimental version of the Saiku Agent. It is not intended for production use. It is provided as-is, without warranty of any kind.
+  Use at your own risk.`
+  master.displayMessage(warningMessage)
   if(['both', 'output'].includes(speech)) {
     // @ts-ignore
     const { oraPromise } = await requiresm('ora');

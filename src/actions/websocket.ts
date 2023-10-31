@@ -43,7 +43,7 @@ export default class WebsocketAction implements Action {
       });
 
       io.on("connection", (socket: any) => {
-        console.log("a user connected");
+        console.log("A user connected");
 
         socket.on("agent_request", async (data: any) => {
           let responseFromAgent = await this.processAgentRequest(data);
@@ -51,7 +51,7 @@ export default class WebsocketAction implements Action {
         });
 
         socket.on("disconnect", () => {
-          console.log("user disconnected");
+          console.log("A user disconnected");
         });
       });
 

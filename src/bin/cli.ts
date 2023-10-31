@@ -31,11 +31,7 @@ const cmdDir = getDirectories(
   path.join(process.mainModule?.path, 'commands').replace(/\\/g, '/')
 ).join(',');
 glob
-  .globSync(
-    `${path.join(
-      process.mainModule?.path,
-    )}/commands/${cmdDir}/index.js`.replace(/\\/g, '/')
-  )
+  .globSync(`${path.join(process.mainModule?.path,'commands',`{${cmdDir}}`,'index.js')}`.replace(/\\/g, '/'))
   .forEach(function (file: any) {
     const cmd = require(path.resolve(file));
     cmd(program);

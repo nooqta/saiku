@@ -123,8 +123,7 @@ interface OpenAIPredictionRequest extends PredictionRequest {
         this.agent.messages.push({
           role: "function",
           name: actionName,
-          // content: chunks.length > 1? await this.agent.functions['text_summarizer'].run({text: result}): result, 
-          content: result, 
+          content: chunks.length > 1? await this.agent.functions['text_summarizer'].run({text: result}): result, 
         });
   
         return await this.interact(useDelegate);
