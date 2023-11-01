@@ -1,5 +1,25 @@
 # Saiku (細工) The AI Agent
 
+## Table of Contents
+
+- [About](#about)
+  - [Why Saiku?](#why-saiku)
+  - [What is PEAS?](#what-is-peas)
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Demo](#demo)
+- [Usage](#usage)
+  - [Command Line Options](#command-line-options)
+  - [Setting Up Environment Variables](#setting-up-environment-variables)
+- [Future Features](#future-features)
+- [Contributing](#contributing)
+- [Support Saiku](#support-saiku)
+- [Feedback and Issues](#feedback-and-issues)
+- [API Rate Limits/Cost](#api-rate-limitscost)
+- [Note](#note)
+- [License](#license)
+
 ## About
 
 This project aims to create a robust, intelligent AI Agent capable of automating various tasks. Our agent is designed following the PEAS (Performance measure, Environment, Actuators, Sensors) framework to ensure it's robust, scalable, and efficient.
@@ -162,20 +182,23 @@ GITLAB_API_VERSION=
 Use Saiku with various options to tailor its operation to your needs:
 
 ```
-Usage: saiku [options]
-
 AI agent to help automate your tasks
+
+Options:
+  -v, --version                Output the current version.
+  -exec, --allowCodeExecution  Execute the code without prompting the user.
+  -s, --speech <type>          Receive voice input from the user and/or output responses as speech.
+                               Possible values: input, output, both, none. Default is "none".
+  -role, --systemMessage       The model system role message.
+  -m, --llm <model>            Specify the language model to use. 
+                               Possible values: openai, vertexai, ollama, and huggingface. Default is "openai".
+  -h, --help                   Display help for command.
+
+Commands:
+  action [options]             Create an action using AI (TODO).
+  autopilot [options]          AI agent to help automate your tasks on autopilot mode (in progress).
+  serve                        Chat with the Saiku agent in the browser.
 ```
-
-#### Options:
-
-| Short | Long                  | Description                                                                                      | Default  |
-|-------|-----------------------|--------------------------------------------------------------------------------------------------|----------|
-| `-v`  | `--version`           | Output the current version.                                                                      |          |
-| `-exec`| `--allowCodeExecution`| Execute the code without prompting the user.                                                    | `false`  |
-| `-s`  | `--speech <type>`     | Receive voice input from the user and/or output responses as speech. Possible values: input, output, both, none. | `"none"` |
-| `-role`| `--systemMessage`    | The model system role message.                                                                   |          |
-| `-h`  | `--help`              | Display help for command.                                                                        |          |
 
 ## Examples:
 
@@ -198,17 +221,26 @@ or
 npm start -- --speech both
 ```
 
+To specify a language model:
+```
+saiku -m huggingface
+```
+or
+```
+npm start -- --llm huggingface
+```
+
 
 ## Future Features
 
-- **Incorporation of Diverse Models**: While currently relying on OpenAI and its code interpreter, future versions of Saiku aim to incorporate various other AI and LLM models to enhance its capabilities and versatility
+- ~~**Incorporation of Diverse Models**: While currently relying on OpenAI and its code interpreter, future versions of Saiku aim to incorporate various other AI and LLM models to enhance its capabilities and versatility~~
 - **Web Compatible Version**: Development of a web-compatible version of Saiku to ensure easy accessibility and integration into web-based platforms.
 - **Python Version**: Creation of a Python version of Saiku to cater to Python developers and AI enthusiasts, allowing seamless integration into Python-centric projects.
 - **Configuration Management**: Implementation of a robust configuration management system to ensure Saiku’s smooth and efficient operation in diverse environments.
 - **Enhanced Debugging and Logging**: Improvement in debugging and logging capabilities for easier identification and resolution of issues, ensuring Saiku's robust performance.
 - **Comprehensive Tests**: Development of comprehensive tests to continuously evaluate and ensure Saiku's functionality, reliability, and performance.
-- **Voice Commands**: Integration with technologies like Whisper for efficient and user-friendly voice command functionalities.
-- **Speaking Agent**: Implementation of Text-to-Speech technologies like Elevenlabs, enabling Saiku to interact using voice, enhancing user experience.
+- ~~**Voice Commands**: Integration with technologies like Whisper for efficient and user-friendly voice command functionalities.~~
+- ~~**Speaking Agent**: Implementation of Text-to-Speech technologies like Elevenlabs, enabling Saiku to interact using voice, enhancing user experience.~~
 - **Enhanced Memory Handling**: Upgrades in memory handling for optimal and consistent performance.
 - **Document Summarization**: Integration of document summarization features for effective handling of large textual data.
 - **Advanced Actions**: Inclusion of computer vision and image interpretation capabilities, broadening the spectrum of tasks Saiku can adeptly handle.
@@ -232,6 +264,14 @@ We welcome contributions from the community. If you'd like to contribute, please
 ## Support Saiku
 
 We are actively seeking sponsors and contributors. If you believe in the potential of Saiku, support the project in any way you can. Your support will help us make Saiku a reality.
+
+## Feedback and Issues
+
+We value your feedback. If you encounter any issues or have suggestions for improvements, please open an issue on our GitHub repository.
+
+## API Rate Limits/Cost
+
+Please be aware of the rate limits and costs associated with the APIs used by Saiku. Each service provider may have different policies, and it's essential to stay informed to avoid unexpected charges.
 
 ## Note
 
