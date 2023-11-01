@@ -1,98 +1,65 @@
-const OriginalXMLHttpRequest = window.XMLHttpRequest;
+// Combined content script
 
-function PatchedXMLHttpRequest() {
-  const xhrInstance = new OriginalXMLHttpRequest();
+if (!window.hasOpenAIScriptInjected) {
+  window.hasOpenAIScriptInjected = true;
 
-  const originalOpen = xhrInstance.open;
-  const originalSend = xhrInstance.send;
+  // Function to set the user's input in the textarea and click the send button
+  function setAndSend(userInput) {
+    const textarea = document.getElementById("prompt-textarea");
+    textarea.value = userInput;
+    // Dispatch an input event to simulate user typing
+    const event = new Event("input", {
+      bubbles: true,
+      cancelable: true,
+    });
+    textarea.dispatchEvent(event);
 
-  // Override the `open` method to capture method and URL
-  xhrInstance.open = function (method, url, ...rest) {
-    this._url = url; // Store the URL for later use
-    this._method = method; // Store the method for later use
-    return originalOpen.apply(this, [method, url, ...rest]);
-  };
+    // Simulate a click on the send button
+    document.querySelector('[data-testid="send-button"]').click();
+  }
 
-  // Override the `send` method
-  xhrInstance.send = function (...args) {
-    console.log("Intercepted XHR request:", this._method, this._url);
-    if (
-      this._url.includes("https://chat.openai.com/backend-api/conversation") &&
-      this._method === "POST"
-    ) {
-      // You can add additional logic here
+  function processReceivedData(data) {
+    // Process the received SSE data
+    console.log("Processed data:", data);
+    chrome.runtime.sendMessage({
+      action: "receivedResponse",
+      responseText: data,
+    });
+  }
 
-      // For example, attaching an event listener to handle the load event:
-      this.addEventListener("load", function () {
-        const contentType = this.getResponseHeader("content-type");
-        if (contentType && contentType.includes("text/event-stream")) {
-          // Handle the SSE stream
-          handleSSEStream(this.response);
+  // Function to create and inject the script
+  async function injectScript() {
+    const script = document.createElement("script");
+    script.src = chrome.runtime.getURL('js/island.js');
+    document.documentElement.appendChild(script);
+    script.remove();
+  }
+
+  // Content script listener for messages from the injected script
+  window.addEventListener("message", (event) => {
+    if(typeof event.data == 'string') {
+      event.data = JSON.parse(event.data);
+    }
+    if (event.data && event.data.type === "FROM_PAGE_STREAM") {
+      console.log("Content script received stream message :", event.data);
+      chrome.runtime.sendMessage(event.data, response => {
+        if (chrome.runtime.lastError) {
+          console.error(chrome.runtime.lastError.message);
+        } else {
+          console.log("Content script received response:", response)
         }
       });
     }
+  });
 
-    return originalSend.apply(this, args);
-  };
-
-  return xhrInstance;
-}
-
-window.XMLHttpRequest = PatchedXMLHttpRequest;
-
-
-// Handle the streamed response
-function handleSSEStream(stream) {
-  const reader = stream.getReader();
-
-  reader.read().then(function processText({ done, value }) {
-    if (done) {
-      console.log("Stream complete.");
-      return;
+  // Listen for messages from the background script
+  chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
+    if (request.action === "setAndSend") {
+      setAndSend(request.userInput);
+      await injectScript();
+      sendResponse({ status: "Script injected" });
     }
-
-    // Convert the Uint8Array to a string
-    const textChunk = new TextDecoder().decode(value);
-    console.log("Received Chunk:", textChunk);
-
-    // Process the chunk as needed
-    processReceivedData(textChunk);
-
-    // Read and process the next chunk
-    return reader.read().then(processText);
   });
+
+  console.log("openai content script loaded");
 }
-
-// Function to set the user's input in the textarea and click the send button
-function setAndSend(userInput) {
-  const textarea = document.getElementById("prompt-textarea");
-  textarea.value = userInput;
-  // Dispatch an input event to simulate user typing
-  const event = new Event("input", {
-    bubbles: true,
-    cancelable: true,
-  });
-  textarea.dispatchEvent(event);
-
-  // Simulate a click on the send button
-  document.querySelector('[data-testid="send-button"]').click();
-}
-
-function processReceivedData(data) {
-  // Process the received SSE data
-  console.log("Processed data:", data);
-  chrome.runtime.sendMessage({
-    action: "receivedResponse",
-    responseText: data,
-  });
-}
-
-// Listen for messages from the background script
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "setAndSend") {
-    setAndSend(request.userInput);
-    sendResponse({ status: "Message set and button clicked" });
-  }
-});
-
-console.log("OpenAI content script loaded");

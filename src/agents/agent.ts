@@ -19,7 +19,7 @@ dotenv.config();
 
 class Agent implements IAgent {
   // @todo: use llm instead and allow the user to specify the model
-  model: LLM;
+  model!: LLM;
   score = 100;
   messages: any[] = [];
   systemMessage = 'You are a helpful assistant';
@@ -36,54 +36,53 @@ class Agent implements IAgent {
   services: any = {};
 
   constructor(options: AgentOptions) {
+    this.options = options;
     if (options.systemMessage) {
       this.systemMessage = options.systemMessage;
     }
-    this.model = this.initLLM(options.llm);
+    this.init();
     // Load actions from the specified actionsPath.
     this.loadFunctions(options.actionsPath);
     this.actions = this.getFunctionsDefinitions();
   }
-  initLLM(llm: string | undefined) {
-    let model;
+  init() {
+    const {llm} = this.options;
     switch (llm) {
       case 'openai':
-        model = new OpenAIModel(this,{
+        this.model = new OpenAIModel(this,{
           apiKey: process.env.OPENAI_API_KEY,
         })
         break;
       case 'vertexai':
-        model = new GoogleVertexAI(this,{
+        this.model = new GoogleVertexAI(this,{
           projectId: process.env.GOOGLE_PROJECT_ID,
           apiEndpoint: process.env.GOOGLE_API_ENDPOINT,
           modelId: process.env.GOOGLE_MODEL_ID,
         });
         break;
       case 'ollama':
-        model = new Ollama(this,{
+        this.model = new Ollama(this,{
           baseURL: process.env.OLLAMA_BASE_URL,
           model: process.env.OLLAMA_MODEL,
         });
         break;
       case 'huggingface':
-        model = new HuggingFace(this,{
+        this.model = new HuggingFace(this,{
           apiKey: process.env.HUGGINGFACE_API_KEY,
           model: process.env.HUGGINGFACE_MODEL,
         });
         break;
       case 'socket':
-        model = new SocketAdapterModel(this, this.options);
+        this.model = new SocketAdapterModel(this, this.options);
         break;
       // @todo: add support for other llms
       default:
-          model = new OpenAIModel(this,{
+          this.model = new OpenAIModel(this,{
           apiKey: process.env.OPENAI_API_KEY,
           
         })
         break;
-    }
-    
-    return model; 
+    } 
   }
   
   

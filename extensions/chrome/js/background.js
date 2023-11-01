@@ -9,7 +9,12 @@ function updateIconBasedOnConnection(active) {
 }
 
 function setupSocket() {
-  socket = io("http://localhost:4000");
+  socket = io("http://localhost:4000", {
+    reconnection: true,
+    reconnectionDelay: 5000,       // Starts with 5s
+    reconnectionDelayMax: 10000,   // Maximum delay is 10s
+    reconnectionAttempts: Infinity // Infinite attempts
+  });
 
   socket.on("connect", function () {
     console.log("Connected to socket.io server");
@@ -26,8 +31,9 @@ function setupSocket() {
   });
 
   socket.on("disconnect", function () {
-    console.log("Disconnected from socket.io server");
-    updateIconBasedOnConnection(false);
+      console.log("Disconnected from socket.io server");
+      updateIconBasedOnConnection(false);
+      setTimeout(setupSocket, 5000);  // Try to reconnect every 5 seconds
   });
 
   socket.on("connect_error", function (error) {
@@ -177,20 +183,52 @@ if (!socket?.connected && !socket?.connecting) {
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log("Received message from content script:", request);
+  // Ensure the socket is connected or reconnect if necessary
   if (!socket?.connected && !socket?.connecting) {
     console.log("Socket.io connection not established. Reconnecting...");
     setupSocket();
   }
 
-  if (request.action === "receivedResponse") {
+  // Handle different types of messages
+  if (request.type === "FROM_PAGE_STREAM") {
+    // Handle stream data or completion based on the action
+    switch (request.action) {
+      case 'reinjectContentScript':
+        chrome.tabs.executeScript(sender.tab.id, {file: 'js/inject.js'});
+        console.log("Reinjected content script");
+        break;
+      case 'completed':
+        console.log("Stream completed for URL:", request.url);
+        // Send the completed stream data to the server
+        console.log("Sending stream data to server:", request.data);
+        socket.emit("message_response", request.data);
+        break;
+      case 'error':
+        console.error("Stream error for URL:", request.url, "Error:", request.error);
+        // Send the stream error to the server
+        socket.emit("stream_error", { url: request.url, error: request.error });
+        break;
+      default:
+        // Handle streaming data chunk
+        console.log("Received stream data chunk for URL:", request.url);
+        // Send the stream data chunk to the server
+        socket.emit("stream_data_chunk", { url: request.url, chunk: request.data });
+    }
+  } else if (request.action === "receivedResponse") {
+    // Handle specific action for received responses
     console.log("Received response from content script:", request.responseText);
     socket.emit("message_response", request.responseText);
   } else if (request.type === "SSE_DATA") {
+    // Handle Server-Sent Events data
     console.log("Received SSE Data:", request.data);
-    socket.emit("sse_data", request.data); // Emitting the SSE data to the server
+    socket.emit("sse_data", request.data);
   } else {
+    // Handle all other messages
+    console.log("Received message:", request);
     socket.emit("message", request);
   }
 
+  // Keep the message channel open for asynchronous response
   return true;
 });

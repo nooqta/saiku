@@ -12,13 +12,17 @@
     "tabs",
     "storage",
     "downloads",
+    "background",
     "webRequest",
     "webRequestBlocking"
   ],
   "background": {
-    "scripts": ["lib/socket.io.min.js", "js/background.js"],
+    "scripts": ["lib/socket.io.min.js", "js/background.js", "js/inject.js"],
     "persistent": true
   },
+  "web_accessible_resources": [
+    "js/island.js"
+  ],
   "content_scripts": [
     {
       "matches": ["*://*.openai.com/*"],
