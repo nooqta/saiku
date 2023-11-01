@@ -28,6 +28,11 @@
       "matches": ["*://*.openai.com/*"],
       "js": ["js/openai_content.js"],
       "run_at": "document_end"
+    },
+    {
+      "matches": ["*://chat.openai.com/*"], 
+      "js": ["js/inject.js"],
+      "run_at": "document_end"
     }
   ],
   "options_page": "options.html",
