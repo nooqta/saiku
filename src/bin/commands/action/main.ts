@@ -69,10 +69,11 @@ async function activate() {
         // Retrieve the list of actions
         // Prompt with select
     // Install dependencies
-    
+
     // Add to saiku.json
 
 // Don't forget to update the agent functionLoad to use the saiku.json
+// https://vscode.dev/github/nooqta/saiku/blob/main/src/agents/agent.ts#L169
 }
 
 
