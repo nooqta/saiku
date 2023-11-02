@@ -176,6 +176,18 @@ class Agent implements IAgent {
       this.functions[actionInstance.name] = actionInstance;
     });
   }
+  public getAllFunctions(actionsPath: string) {
+    const actionFiles = fs.readdirSync(
+      join(path.resolve(__dirname, actionsPath))
+    );
+    const functions : Action[]=[] ;
+    actionFiles.forEach((file) => {
+      const actionClass = require(path.join(actionsPath, file)).default;
+      const actionInstance: Action = new actionClass(this);
+      functions.push(actionInstance);
+    });
+    return functions
+  }
 
   async sense(): Promise<any> {
     return new Promise((resolve) => {
