@@ -1,10 +1,9 @@
 import Agent from "@/agents/agent";
 import { Action } from "@/interfaces/action";
-import Vision, { ImageAnnotatorClient } from "@google-cloud/vision";
+import { ImageAnnotatorClient } from "@google-cloud/vision";
 import { OpenAI } from "openai";
 import * as fs from "fs";
 import sharp from "sharp";
-import { writeFileSync } from "fs";
 import { join } from "path";
 interface Rectangle {
   x: number;
@@ -37,6 +36,7 @@ function extractTextRectanglesFromAnnotations(
 }
 
 export default class ImageToWebPageAction implements Action {
+    static dependencies = ["@google-cloud/vision","openai","sharp"];
   name = "imageToWebPage";
   description = "Generate HTML and CSS from an image of a web page design";
   arguments = [

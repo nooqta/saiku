@@ -4,6 +4,7 @@ import { Twilio } from "twilio";
 import dotenv from 'dotenv'; 
 dotenv.config();
 export default class SendSMSTwilioAction implements Action {
+    static dependencies = ["twilio","dotenv"];
     agent: Agent;
     name = "sendSMSTwilio";
     description = "Send an SMS using Twilio";

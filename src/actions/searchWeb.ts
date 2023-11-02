@@ -2,6 +2,7 @@ import Agent from '@/agents/agent';
 import { Action } from '@/interfaces/action';
 
 export default class SearchWebAction implements Action {
+    static dependencies = [];
   agent: Agent;
   name = 'search_web';
   description = 'Perform a web search using Google Custom Search JSON API';

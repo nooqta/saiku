@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import Agent from "@/agents/agent";
 dotenv.config();
 export default class SendEmailAction implements Action {
+    static dependencies = ["nodemailer","dotenv"];
   agent: Agent;
   name = "send_email";
   description = "Send an email";

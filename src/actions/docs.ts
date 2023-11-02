@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export default class GoogleDocsAction extends GoogleDrive implements Action {
+  dependencies = ['dotenv','googleapis','google-auth-library'];
     agent: Agent;
     name = 'google_docs';
     description = 'Create, update, and manage Google Docs documents';

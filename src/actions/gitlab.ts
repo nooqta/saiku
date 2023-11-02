@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export default class GitLabQueryAction implements Action {
+    static dependencies = ["openai","node-fetch","dotenv"];
     name = "gitLabQuery";
     description = "Ask a question about your GitLab projects and get an answer!";
     arguments = [

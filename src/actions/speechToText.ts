@@ -16,6 +16,7 @@ const openai = new OpenAI({
 });
 
 export default class SpeechToTextAction implements Action {
+    static dependencies = ["fluent-ffmpeg","openai", "@ffmpeg-installer/ffmpeg"];
   agent: Agent;
   name = "speech_to_text";
   description = "Transcribe audio to text";

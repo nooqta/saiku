@@ -160,6 +160,7 @@ class AppleScriptRunner implements LanguageRunner {
 }
 
 export default class ExecuteCodeAction implements Action {
+    static dependencies = ["marked","marked-terminal"];
   agent: Agent;
   name = "execute_code";
   description = "Execute code in a specific language";

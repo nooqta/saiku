@@ -15,6 +15,7 @@ interface SheetArgs {
 }
 
 export default class SheetAction extends GoogleDrive implements Action {
+  dependencies = ['dotenv','googleapis','google-auth-library'];
   agent: Agent;
   name = "google_sheet";
   description = "Manage Google Sheets files";

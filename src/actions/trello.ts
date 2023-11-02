@@ -5,6 +5,7 @@ import Agent from "@/agents/agent";
 dotenv.config();
 
 export default class TrelloAction implements Action {
+    static dependencies = ["node-fetch","dotenv"];
   agent: Agent;
   name = "trelloAction";
   description = "Interact with Trello to list cards, add cards, or search across boards, cards, and members based on a query.";

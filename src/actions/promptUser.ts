@@ -3,6 +3,7 @@ import { Action } from '../interfaces/action';
 import {prompt} from 'prompts';
 
 export default class PromptUserAction implements Action {
+    static dependencies = ["prompts"];
     agent: Agent;
     name = 'prompt_user';
     description = 'Prompt the user for input based on a specified message and type. The choices argument is only required for select and multiselect types.';

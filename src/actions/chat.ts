@@ -5,6 +5,7 @@ import Agent from "@/agents/agent";
 import path from "path";
 
 export default class ChatAction implements Action {
+    static dependencies = [];
     agent: Agent;
     name = "chat";
     description = "Chat with agent on a browser.";

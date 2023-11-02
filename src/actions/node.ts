@@ -7,6 +7,7 @@ import { Server } from "socket.io";
 import { createServer } from "http";
 
 export default class NodeAction implements Action {
+    static dependencies = ["prompts","express","cors","socket.io"];
   agent: Agent;
   name = "NodeAction";
   description = "Interacts with the browser through an internal agent.";

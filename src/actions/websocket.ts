@@ -6,6 +6,7 @@ import { createServer, Server as HttpServer } from "http";
 import cors from "cors";
 import path from "path";
 export default class WebsocketAction implements Action {
+    static dependencies = ["express","socket.io","cors"];
   agent: Agent;
   name = "websocket_server";
   description =

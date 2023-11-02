@@ -3,6 +3,7 @@ import { Action } from "@/interfaces/action";
 import fs from "fs";
 
 export default class UpdateFileContentAction implements Action {
+    static dependencies = [];
     agent: Agent;
     name = "updateFileContent";
     description = "Update part of a file's content using a regular expression pattern";

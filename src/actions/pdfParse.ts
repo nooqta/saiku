@@ -6,6 +6,7 @@ import pdf from 'pdf-parse';
 
 // PDFParseAction Class
 export default class PDFParseAction implements Action {
+    static dependencies = ["node-fetch","pdf-parse"];
   agent: Agent;
   name = 'parsePDF';
   description = 'Parses a PDF file from a URL or local file path and returns its content.';

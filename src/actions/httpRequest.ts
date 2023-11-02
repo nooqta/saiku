@@ -4,6 +4,7 @@ import { Action } from "@/interfaces/action";
 import axios from 'axios'; // Using axios for making API requests
 
 export default class HTTPRequestAction implements Action {
+    static dependencies = ["axios"];
   agent: Agent;
   
     name = 'apiRequest';

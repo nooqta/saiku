@@ -3,6 +3,7 @@ import { Action } from "@/interfaces/action";
 import puppeteer from "puppeteer";
 
 export default class HTMLToPDFAction implements Action {
+    static dependencies = ["puppeteer"];
     agent: Agent;
     name = "htmlToPDF";
     description = "Create a PDF from HTML content";

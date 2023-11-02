@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export default class OpenAICompletionAction implements Action {
+    static dependencies = ["openai","dotenv"];
   agent: Agent;
   name = 'openai_completion';
   description = 'Generate completions using the OpenAI API.';

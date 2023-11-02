@@ -77,6 +77,7 @@ class TextSummarizer {
 
 // Create a new TextSummarizer action class
 export default class TextSummarizerAction implements Action {
+    static dependencies = ["openai","dotenv"];
   agent: Agent;
   name = "text_summarizer";
   description = "Incrementally summarizes text using a specified model";

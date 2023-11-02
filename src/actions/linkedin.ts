@@ -7,6 +7,7 @@ interface LinkedInPostArgs {
 }
 
 export default class LinkedInPostAction implements Action {
+    static dependencies = ["node-fetch"];
   agent: Agent;
   name = "linkedin_post";
   description = "Post content to LinkedIn";
