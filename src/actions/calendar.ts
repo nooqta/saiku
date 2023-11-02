@@ -29,7 +29,7 @@ interface CalendarArgs {
 }
 
   export default class CalendarAction implements Action {
-  requirements = ["@google-cloud/aiplatform", "@google-cloud/local-auth", "@google-cloud/vision", "dotenv", "googleapis"];
+  dependencies = ["@google-cloud/aiplatform",  "googleapis"];
   agent: Agent;
   name = "calendar_action";
   description = "Manage Google Calendar events";

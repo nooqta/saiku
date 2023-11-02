@@ -6,10 +6,10 @@ import { Command } from 'commander';
 module.exports = (cmd: Command) => {
   cmd
   .command('action')
-  .option('-c, --create <name>', 'Create a new action')
-    .description('Chat with the Saiku agent in the browser')
-    .action(async (_opt: any) => {
-      return await main(_opt);
+  .argument('[action]', 'What action to perform. Available actions: create, list, activate', 'create')
+    .description('Manage actions')
+    .action(async (action: any) => {
+      return await main(action);
     });
 };
 
