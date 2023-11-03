@@ -4,7 +4,7 @@ import OpenAI from "openai";
 import Agent from "@/agents/agent";
 
 export default class ScrapeAndProcessURLAction implements Action {
-    static dependencies = ["puppeteer","openai"];
+    dependencies = ["puppeteer","openai"];
   agent: Agent;
   name = "scrape_and_process_url";
   description =

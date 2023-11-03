@@ -4,7 +4,7 @@ import fs from 'fs';
 import Agent from '@/agents/agent';
 
 export default class FileAction implements Action {
-    static dependencies = [];
+    dependencies = [];
     agent: Agent;
     name = 'file_action';
     description = 'Save content to a file or read content from a file';

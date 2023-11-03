@@ -4,7 +4,7 @@ import { Action } from "@/interfaces/action";
 import path from "path";
 
 export default class TakeScreenshotAction implements Action {
-    static dependencies = ["puppeteer"];
+    dependencies = ["puppeteer"];
   agent: Agent;
   name = "take_screenshot";
   description = "Capture a screenshot of a webpage";

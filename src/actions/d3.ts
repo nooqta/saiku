@@ -6,7 +6,7 @@ import { spawn } from 'child_process';
 
 
 export default class D3Action implements Action {
-    static dependencies = ["puppeteer"];
+    dependencies = ["puppeteer"];
     name = 'd3_chart_generation';
     description = 'Generates various types of charts and saves them as images using D3';
     arguments = [

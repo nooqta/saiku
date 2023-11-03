@@ -11,7 +11,7 @@ interface QueryArgs {
 }
 
 export default class DatabaseQueryAction implements Action {
-    static dependencies = ["mysql2","dotenv"];
+    dependencies = ["mysql2","dotenv"];
   agent: Agent;
   name = "database_query";
   description = "Execute a database query";

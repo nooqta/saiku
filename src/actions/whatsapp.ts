@@ -5,8 +5,8 @@ import Agent from "@/agents/agent";
 import { LLM } from "@/interfaces/llm";
 
 export default class WhatsAppAction implements Action {
-    static dependencies = ["whatsapp-web.js","qrcode-terminal"];
-  name = "whatsAppMessaging";
+    dependencies = ["whatsapp-web.js","qrcode-terminal"];
+  name = "whatsapp";
   description = "Send and reply to WhatsApp messages using OpenAI";
   arguments = [
     // Define the arguments as needed, for example:

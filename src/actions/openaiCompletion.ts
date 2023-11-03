@@ -5,19 +5,19 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export default class OpenAICompletionAction implements Action {
-    static dependencies = ["openai","dotenv"];
+    dependencies = ["openai","dotenv"];
   agent: Agent;
   name = 'openai_completion';
   description = 'Generate completions using the OpenAI API.';
   arguments = [
     { name: 'userQuery', type: 'string', required: true },
   ];
+public systemMessage = 'You are a helpful assistant.';
 // Constructor
 constructor(agent: Agent) {
   this.agent = agent;
 }
   async run(args: { userQuery: string }): Promise<string> {
-
     // Initialize the OpenAI object
     const openai = new OpenAI({
         apiKey: process.env.OPENAI_API_KEY,
@@ -28,7 +28,7 @@ constructor(agent: Agent) {
       messages: [
         {
           role: 'system',
-          content: 'You are a helpful assistant.',
+          content: this.systemMessage,
         },
         {
           role: 'user',

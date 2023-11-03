@@ -6,9 +6,9 @@ import textract from 'textract';
 
 // WordParseAction Class
 export default class WordParseAction implements Action {
-    static dependencies = ["mammoth","textract"];
+    dependencies = ["mammoth","textract"];
   agent: Agent;
-  name = 'parseWord';
+  name = 'word_parse';
   description = 'Parses a MS Word document from a URL or local file path and returns its content.';
   arguments = [
     { name: 'url', type: 'string', required: true, description: 'URL or local file path of the Word document' },

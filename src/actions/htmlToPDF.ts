@@ -3,9 +3,9 @@ import { Action } from "@/interfaces/action";
 import puppeteer from "puppeteer";
 
 export default class HTMLToPDFAction implements Action {
-    static dependencies = ["puppeteer"];
+    dependencies = ["puppeteer"];
     agent: Agent;
-    name = "htmlToPDF";
+    name = "html_to_pdf";
     description = "Create a PDF from HTML content";
     arguments = [
         { name: "htmlContent", type: "string", required: true, description: "The HTML content to convert to PDF." },

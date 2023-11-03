@@ -6,7 +6,7 @@ import fetch from "node-fetch";
 import axios from 'axios';
 
 export default class MoleculeStructureAction implements Action {
-    static dependencies = ["puppeteer","node-fetch","axios"];
+    dependencies = ["puppeteer","node-fetch","axios"];
   agent: Agent;
   name = "molecule_structure";
   description = "Generates an image of a molecule structure using PubChem";

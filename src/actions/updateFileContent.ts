@@ -3,9 +3,9 @@ import { Action } from "@/interfaces/action";
 import fs from "fs";
 
 export default class UpdateFileContentAction implements Action {
-    static dependencies = [];
+    dependencies = [];
     agent: Agent;
-    name = "updateFileContent";
+    name = "update_file_content";
     description = "Update part of a file's content using a regular expression pattern";
     arguments = [
         { name: "pattern", type: "string", required: true, description: "The regular expression pattern to search for in the file." },

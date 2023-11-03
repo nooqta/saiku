@@ -4,9 +4,9 @@ import { exec } from "child_process";
 import Agent from "@/agents/agent";
 
 export default class HandMovementAction implements Action {
-    static dependencies = [];
+    dependencies = [];
     agent: Agent;
-    name = "handMovement";
+    name = "hand_movement";
     description = "Use hand movements to interact with various elements on an HTML page using opencv.js";
     arguments = [
         { name: "userScript", type: "string", required: true, description: "The JavaScript logic to be executed based on hand movements." }

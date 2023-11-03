@@ -2,7 +2,7 @@ import Agent from "@/agents/agent";
 import { Action } from "../interfaces/action";
 
 class UpdateMemory implements Action {
-    name = "updateMemory";
+    name = "update_memory";
     description = "Updates the agent's memory with the given key-value pairs";
     arguments = [];
     agent: any;

@@ -4,10 +4,10 @@ import { Action } from "@/interfaces/action";
 import axios from 'axios'; // Using axios for making API requests
 
 export default class HTTPRequestAction implements Action {
-    static dependencies = ["axios"];
+    dependencies = ["axios"];
   agent: Agent;
   
-    name = 'apiRequest';
+    name = 'http_request';
     description = 'Make HTTP requests to specific URL including API\'s.';
     arguments = [
       { name: 'intent', type: 'string', required: true, description: 'A description of the current API request.'},

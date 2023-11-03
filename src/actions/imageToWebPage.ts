@@ -36,8 +36,8 @@ function extractTextRectanglesFromAnnotations(
 }
 
 export default class ImageToWebPageAction implements Action {
-    static dependencies = ["@google-cloud/vision","openai","sharp"];
-  name = "imageToWebPage";
+    dependencies = ["@google-cloud/vision","openai","sharp"];
+  name = "image_to_web_page";
   description = "Generate HTML and CSS from an image of a web page design";
   arguments = [
     {

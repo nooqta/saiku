@@ -29,9 +29,9 @@ interface CalendarArgs {
 }
 
   export default class CalendarAction implements Action {
-    static dependencies = ["googleapis","google-auth-library"];
+    dependencies = ["googleapis","google-auth-library"];
   agent: Agent;
-  name = "calendar_action";
+  name = "google_calendar";
   description = "Manage Google Calendar events";
   arguments = [
     {

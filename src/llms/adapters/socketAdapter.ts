@@ -31,6 +31,7 @@ export class SocketAdapterModel implements LLM {
   constructor(agent: Agent, opts: { systemMessage?: string }) {
     this.agent = agent;
     this.name = "SocketAdapter";
+    console.log("Initializing SocketAdapter model...");
     this.messages = [
       {
         role: "system",

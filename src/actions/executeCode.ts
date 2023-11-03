@@ -27,7 +27,7 @@ class GeneralRunner implements LanguageRunner {
       child.on("error", (error) => reject(error));
       child.on("exit", (code) => {
         if (code === 0) {
-          resolve(`Execution complete. ${scriptOutput}}`);
+          resolve(`Execution complete. ${scriptOutput}`);
         } else {
           reject(`Exit with code: ${code}\nError Output:\n${stderr}`);
         }
@@ -65,34 +65,42 @@ class PHPRunner implements LanguageRunner {
   }
 }
 
-class PythonRunner implements LanguageRunner {
+class PythonRunner {
   async runCode(code: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      const child = spawn("python3", ["-c", code]);
+      const child = spawn("python3", ["-u", "-c", code]);
 
-      let stderr = "";
-      let scriptOutput = "";
-      child.stderr.on("data", (data) => {
-        stderr += data.toString(); // collect standard error output
+      let stderr = '';
+      let stdout = '';
+
+      child.stderr.setEncoding('utf8');
+      child.stderr.on('data', (data) => {
+        stderr += data; // collect standard error output
       });
 
-      child.stdout.setEncoding("utf8");
-      child.stdout.on("data", function (data) {
-        data = data.toString();
-        scriptOutput += data;
+      child.stdout.setEncoding('utf8');
+      child.stdout.on('data', (data) => {
+        stdout += data;
       });
 
-      child.on("error", (error) => reject(error));
-      child.on("exit", (code) => {
-        if (code === 0) {
-          resolve(`Execution complete. ${scriptOutput}}`);
+      child.on('error', (error) => {
+        reject(`Script error: ${error.message}`);
+      });
+
+      child.on('exit', (code) => {
+        if (stderr) {
+          reject(`Script completed with errors:\n${stderr}`);
+        } else if (code !== 0) {
+          reject(`Script exited with code ${code} and no output.`);
         } else {
-          reject(`Exit with code: ${code}\nError Output:\n${stderr}`); // include standard error output in the rejection
+          resolve(stdout || 'Script completed with no output.');
         }
       });
     });
   }
 }
+
+
 
 class ShellRunner implements LanguageRunner {
   async runCode(code: string): Promise<string> {
@@ -160,7 +168,7 @@ class AppleScriptRunner implements LanguageRunner {
 }
 
 export default class ExecuteCodeAction implements Action {
-    static dependencies = ["marked","marked-terminal"];
+    dependencies = ["marked","marked-terminal"];
   agent: Agent;
   name = "execute_code";
   description = "Execute code in a specific language";

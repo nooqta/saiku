@@ -5,7 +5,7 @@ import axios from 'axios';
 import Agent from '@/agents/agent';
 
 export default class GoogleVisionAction implements Action {
-    static dependencies = ["@google-cloud/vision","axios"];
+    dependencies = ["@google-cloud/vision","axios"];
   name = "google_vision";
   description = "Analyze an image using Google Cloud Vision API";
   arguments = [
