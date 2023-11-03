@@ -6,7 +6,7 @@ import remarkGfm from 'remark-gfm'
 import 'katex/dist/katex.min.css';
 import remarkMath from 'remark-math'
 import rehypeMermaid from 'rehype-mermaid'
-
+import rehypeRaw from 'rehype-raw';
 // @ts-ignore
 import rehypeKatex from 'rehype-katex';
 
@@ -15,11 +15,14 @@ import { CodeBlock } from '@/components/ui/codeblock'
 import { MemoizedReactMarkdown } from '@/components/markdown'
 import { IconOpenAI, IconUser } from '@/components/ui/icons'
 import { ChatMessageActions } from '@/components/chat-message-actions'
+import ReactMarkdown from 'react-markdown';
 export interface ChatMessageProps {
+  
   message: Message
 }
 
 export function ChatMessage({ message, ...props }: ChatMessageProps) {
+
   return (
     <div
       className={cn('group relative mb-4 flex items-start md:-ml-12')}
@@ -36,10 +39,10 @@ export function ChatMessage({ message, ...props }: ChatMessageProps) {
         {message.role === 'user' ? <IconUser /> : <IconOpenAI />}
       </div>
       <div className="ml-4 flex-1 space-y-2 overflow-hidden px-1">
-        <MemoizedReactMarkdown
+        <ReactMarkdown
           className="prose dark:prose-invert prose-p:leading-relaxed prose-pre:p-0 break-words"
           remarkPlugins={[remarkGfm, remarkMath]}
-          rehypePlugins={[rehypeKatex, rehypeMermaid]} 
+          rehypePlugins={[rehypeKatex, rehypeRaw, rehypeMermaid]}
           components={{
             p({ children }) {
               return <p className="mb-2 last:mb-0">{children}</p>
@@ -54,17 +57,13 @@ export function ChatMessage({ message, ...props }: ChatMessageProps) {
 
                 children[0] = (children[0] as string).replace('`▍`', '▍')
               }
+              
 
               const match = /language-(\w+)/.exec(className || '')
 
               if (inline) {
-                return (
-                  <code className={className} {...props}>
-                    {children}
-                  </code>
-                )
-              }
-              console.log(JSON.stringify(match))
+                return <code {...props}>{children}</code>;
+              } 
               return (
                 <CodeBlock
                   key={Math.random()}
@@ -77,7 +76,7 @@ export function ChatMessage({ message, ...props }: ChatMessageProps) {
           }}
         >
           {message.content}
-        </MemoizedReactMarkdown>
+        </ReactMarkdown>
         <ChatMessageActions message={message} />
       </div>
     </div>

@@ -54,3 +54,4 @@ specs.txt
 credentials.json
 .vercel
 saiku.json
+add-deps.js
