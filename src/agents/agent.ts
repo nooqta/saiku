@@ -167,9 +167,24 @@ class Agent implements IAgent {
     console.log(marked(message));
   }
   private loadFunctions(actionsPath: string) {
-    const actionFiles = fs.readdirSync(
+    let actionFiles = fs.readdirSync(
       join(path.resolve(__dirname, actionsPath))
     );
+    const activatedActions = ['execute_code'];
+    // check if we have a .saiku file
+    if (fs.existsSync(path.join(actionsPath, '.saiku'))) {
+      const saikuFile = fs.readFileSync(path.join(actionsPath, '.saiku'), 'utf-8');
+      const saiku = JSON.parse(saikuFile);
+      if (saiku.activatedActions) {
+        activatedActions.push(...saiku.activatedActions);
+      }
+    }
+    // filter actions and load
+    actionFiles = actionFiles.filter((file) => {
+      const actionClass = require(path.join(actionsPath, file)).default;
+      const actionInstance: Action = new actionClass(this);
+      return activatedActions.includes(actionInstance.name);
+    });
     actionFiles.forEach((file) => {
       const actionClass = require(path.join(actionsPath, file)).default;
       const actionInstance: Action = new actionClass(this);

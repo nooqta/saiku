@@ -265,7 +265,7 @@ async function installActionDependencies(
   return new Promise((resolve, reject) => {
     console.log(`Installing dependencies for "${action}"...`);
 
-    const npmInstall = spawn("npm", ["install", ...dependencies]);
+    const npmInstall = spawn("npm", ["install", ...dependencies], {stdio: "inherit"});
 
     npmInstall.on("close", (code: any) => {
       if (code === 0) {
@@ -282,16 +282,6 @@ async function installActionDependencies(
         `Error while installing dependencies for "${action}": ${err.message}`
       );
       reject(err);
-    });
-
-    npmInstall.stdout.on("data", (data: any) => {
-      // Log npm output to the console
-      console.log(data.toString());
-    });
-
-    npmInstall.stderr.on("data", (data: any) => {
-      // Log npm error output to the console
-      console.error(data.toString());
     });
   });
 }
