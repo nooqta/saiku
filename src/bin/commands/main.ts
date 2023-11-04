@@ -5,7 +5,8 @@ import Agent from '../../agents/agent';
 
 
 async function main(opts: any) {
-  const { speech } = opts;
+  let { speech, interactive} = opts;
+  interactive = interactive === 'false' ? false : true;
   // Initialize the agent
   // @todo: allow the user to specify multiple actions paths
   const agent = new Agent({ actionsPath: "../actions", ...opts });
@@ -67,7 +68,7 @@ async function main(opts: any) {
       await agent.interact();
       // await oraPromise(agent.interact());
     }
-  } while (userQuery.toLowerCase() !== "quit");
+  } while (userQuery.toLowerCase() !== "quit" && Boolean(interactive));
 }
 
 
