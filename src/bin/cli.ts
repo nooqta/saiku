@@ -1,41 +1,46 @@
 #!/usr/bin/env node
-'use strict';
-const { Command } = require('commander');
+"use strict";
+
+const { Command } = require("commander");
 const program = new Command();
-const { readdirSync } = require('fs');
-const glob = require('glob'),
-  path = require('path');
-// get the current version from package.json
-const { version } = require(path.resolve(
-  process.mainModule?.path,
-  '../..',
-  'package.json'
-).replace(/\\/g, '/'));
-program.version(version, '-v, --version', 'Output the current version');
+const fs = require("fs");
+const path = require("path");
+const { version } = require(path.resolve(__dirname, "../..", "package.json"));
 
-// @todo: move to core
-const getDirectories = (source: string) =>
-  readdirSync(source, { withFileTypes: true })
-    .filter((dirent: any) => dirent.isDirectory())
-    .map((dirent: any) => dirent.name);
+program.version(version, "-v, --version", "Output the current version");
 
-    // add the default command
-const defaultCmd = require(path.resolve(
-  process.mainModule?.path,
-  'commands/index'
-));
+// Function to get directories
+const getDirectories = (source: any) =>
+  fs
+    .readdirSync(source, { withFileTypes: true })
+    .filter((dirent: { isDirectory: () => any; }) => dirent.isDirectory())
+    .map((dirent: { name: any; }) => dirent.name);
 
-defaultCmd(program);
+(async () => {
+  // Register default command
+  const defaultCmdPath = path.join(__dirname, "commands", "index.js");
+  if (fs.existsSync(defaultCmdPath)) {
+    const defaultCmd = require(defaultCmdPath);
+    defaultCmd(program);
+  }
 
-const cmdDir = getDirectories(
-  path.join(process.mainModule?.path, 'commands').replace(/\\/g, '/')
-).join(',');
-glob
-  .globSync(`${path.join(process.mainModule?.path,'commands',`{${cmdDir}}`,'index.js')}`.replace(/\\/g, '/'))
-  .forEach(function (file: any) {
-    const cmd = require(path.resolve(file));
-    cmd(program);
-    // @todo: register custom commands using glob
-  });
+  // Dynamically load commands
+  const commandsPath = path.join(__dirname, "commands");
+  const commandDirs = getDirectories(commandsPath);
 
-program.parse(process.argv);
+  for (const dir of commandDirs) {
+    const indexPath = path.join(commandsPath, dir, "index.js");
+    if (fs.existsSync(indexPath)) {
+      const commandModule = require(indexPath);
+      if (typeof commandModule === "function") {
+        await commandModule(program); // Add the command to the main program using the exported function
+      } else {
+        console.error(`Command loader for '${dir}' does not export a function.`);
+      }
+    }
+  }
+
+  // This should be after all the commands have been loaded
+  program.parse(process.argv);
+})();
+
