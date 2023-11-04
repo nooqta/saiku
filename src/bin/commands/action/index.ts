@@ -34,7 +34,6 @@ module.exports = async (program: Command) => {
     actionCmd.action(async () => {
       const opts = actionCmd.opts();
       const args = actionCmd.args;
-      console.log(opts, args);
       const agent = new Agent({
         actionsPath: "../actions",
         llm: 'openai',
