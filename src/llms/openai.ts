@@ -37,7 +37,7 @@ interface OpenAIPredictionRequest extends PredictionRequest {
         this.name = process.env.OPENAI_MODEL || "gpt-3.5-turbo";
         this.messages = [{
             role: "system",
-            content: opts.systemMessage || "You are a helpful assistant"
+            content: agent.systemMessage || "You are a helpful assistant"
         }];
         }
     async predict(request: OpenAIPredictionRequest): Promise<OpenAIPredictionResponse> {
