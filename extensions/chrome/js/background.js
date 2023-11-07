@@ -1,5 +1,16 @@
 let socket;
 
+
+// chrome.webRequest.onCompleted.addListener(
+//   function(details) {
+//     console.log("Completed request:", details);
+//     if (details.type === 'image' && details.tabId > -1) {
+//       // Emit the image URL via socket
+//       socket.emit('image_request', { url: details.url, tabId: details.tabId });
+//     }
+//   },
+//   { urls: ["<all_urls>"], types: ["image"] }
+// );
 function updateIconBasedOnConnection(active) {
   if (active) {
     chrome.browserAction.setIcon({ path: "assets/icons/socket-active.png" });

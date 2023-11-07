@@ -56,5 +56,6 @@ window.addEventListener("message", (event) => {
       await inject()
       return false;
     }
+    
   });
 }

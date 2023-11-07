@@ -4,9 +4,9 @@ import { existsSync } from "fs";
 import { spawn } from "child_process";
 
 async function main(opts: any) {
-  // Initialize the agent
   // @todo: allow the user to specify multiple actions paths
   opts = { actionsPath: "../actions", allowCodeExecution: true, ...opts };
+  // Initialize the agent
   const agent = new Agent(opts);
   agent.options = opts;
   // Start the socket server

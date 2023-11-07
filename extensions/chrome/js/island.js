@@ -3,30 +3,51 @@
     const originalFetch = window.fetch;
   
     function handleStream(reader, requestUrl) {
-      let chunks = ''; // Accumulate chunks of the stream here
+      let lastExtractedChunk = ''; // Store the last relevant extracted part of the chunk
     
       function read() {
         reader.read().then(({ done, value }) => {
           try {
             if (done) {
-              // When the stream is finished, post a 'completed' message with the accumulated chunks
+              // When the stream is finished, post a 'completed' message with the last extracted chunk
               window.postMessage({
                 type: 'FROM_PAGE_STREAM',
                 url: requestUrl,
-                data: chunks,
+                data: lastExtractedChunk,
                 action: 'completed'
               }, '*');
               return;
             }
-            // Decode the stream chunk and add it to the accumulated chunks
-            chunks += new TextDecoder("utf-8").decode(value);
+    
+            // Decode the stream chunk
+            let currentChunk = new TextDecoder("utf-8").decode(value);
+            currentChunk = currentChunk.replace(/data: /g, '');
+            
+            if(currentChunk.includes('[DONE]') || currentChunk.includes('"is_completion": true')) {
+              // If the current chunk signifies the end of the stream, don't process it
+              read();
+              return;
+            }
+    
+            // Try to parse the JSON and extract the desired part
+            try {
+              let jsonChunk = JSON.parse(currentChunk);
+              if(jsonChunk.message && jsonChunk.message.content && jsonChunk.message.content.parts) {
+                // Extract the specific part of the message
+                lastExtractedChunk = jsonChunk.message.content.parts[0];
+              }
+            } catch(parseError) {
+              // ignore this chunk silently
+              //console.error("Error parsing JSON:", parseError);
+            }
+    
             read(); // Continue reading the next chunk
           } catch (error) {
             // If an error occurs while reading the chunk, post a 'completed' message
             window.postMessage({
               type: 'FROM_PAGE_STREAM',
               url: requestUrl,
-              data: chunks, // You may decide to send the chunks read so far or not
+              data: lastExtractedChunk,
               action: 'completed'
             }, '*');
           }
@@ -35,7 +56,7 @@
           window.postMessage({
             type: 'FROM_PAGE_STREAM',
             url: requestUrl,
-            data: chunks, // You may decide to send the chunks read so far or not
+            data: lastExtractedChunk,
             action: 'completed'
           }, '*');
         });
@@ -43,6 +64,7 @@
     
       read(); // Start reading the stream
     }
+    
     
   
     window.fetch = function(resource, init) {

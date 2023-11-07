@@ -99,11 +99,12 @@ export class HuggingFace implements LLM {
             throw new Error("Model name must be specified in PredictionRequest.");
         }
         const context = `
-        You are an assistant powered by llama2. When a user asks a question, analyze the input and decide whether to call a function or provide a direct answer. If a function needs to be called, generate the necessary \`functionCall\` JSON. If the question doesn't match any function, provide a clear and concise answer to the user.
+        You are an assistant powered by ${this.name}. When a user asks a question, analyze the input and decide whether to call a function or provide a direct answer. If a function needs to be called, generate the necessary \`functionCall\` JSON. If the question doesn't match any function, provide a clear and concise answer to the user.
         
         Available Functions:\n
         ${JSON.stringify(request.functions, null, 2)}\n
         
+        Examples:\n
         User: How do I save a text to a file?
         System: 
         {
@@ -131,9 +132,9 @@ export class HuggingFace implements LLM {
                     inputs: request.prompt|| "",
                     parameters: {
                         temperature: request.temperature,
-                        top_p: request.topP,
                         // @ts-ignore
-                        context
+                        context,
+                        top_k: 2000
                     }
                 });
                 

@@ -4,22 +4,10 @@ import Agent from "../../../agents/agent";
 import { requiresm } from "esm-ts";
 import { Command } from 'commander';
 
-export default function (agent: Agent) {
-  return new Command('create')
-    .description('Create an action')
-    // add options and action handler here
-    .action(async() => {
-      await create(agent);
-    });
-}
-    
 
 
 
-
-
-
-async function create(agent: Agent) {
+export default async function create(agent: Agent) {
     // Prompt the user to describe what the action do
     let promptObject: any = {
       type: "text",

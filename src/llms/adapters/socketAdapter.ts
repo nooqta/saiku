@@ -31,7 +31,6 @@ export class SocketAdapterModel implements LLM {
   constructor(agent: Agent, opts: { systemMessage?: string }) {
     this.agent = agent;
     this.name = "SocketAdapter";
-    console.log("Initializing SocketAdapter model...");
     this.messages = [
       {
         role: "system",
@@ -101,14 +100,14 @@ export class SocketAdapterModel implements LLM {
       // Set up a one-time listener for the 'message_response' event
       this.socket.on("message_response", (data: any) => {
         // Check if we have an error
-          if (typeof data == 'object' && data.error) {
-            return resolve({
-              text: data.error,
-              model: this.name,
-            });
-          }
+        if (typeof data == "object" && data.error) {
+          return resolve({
+            text: data.error,
+            model: this.name,
+          });
+        }
 
-          data = this.parse(data);
+        // data = this.parse(data);
         // get last message
         if (!data || !data.length) {
           resolve({
@@ -117,34 +116,25 @@ export class SocketAdapterModel implements LLM {
           });
         }
 
-        // get the success message with status finished_successfully
-        const successMessage = data.find(
-          (item: any) =>
-            item.message && item.message.status === "finished_successfully"
-        );
-        
-        const hasError = successMessage.message.error;
-        if (hasError || !successMessage) {
-          resolve({
-            text: "An error occurred while processing your request. Please try again later.",
-            model: this.name,
-          });
-        }
-
-        // Access the content parts array
-        const contentParts = successMessage.message.content.parts;
-
-        // Concatenate all parts to form the final content
-        const finalContent = contentParts.join("");
         resolve({
-          text: finalContent,
+          text: data,
           model: this.name,
         });
       });
+      // this.socket.on("image_request", (data: any) => {
+      //   const imagUrl = data.url;
+      //   // if (imagUrl.includes(" https://files.oaiusercontent.com")) {
+      //     resolve({
+      //       // add image tag
+      //       text: `<img src="${imagUrl}" />`,
+      //       model: this.name,
+      //     });
+      //   // }
+      // });
     });
   }
 
-  async interact(): Promise<string | void> {
+  async interact(useDelegate = false): Promise<string | void> {
     if (!this.socket) {
       await this.setupSocket();
     }
@@ -163,8 +153,11 @@ export class SocketAdapterModel implements LLM {
       if (["both", "output"].includes(this.agent.options.speech)) {
         await this.agent.speak(content);
       }
-
-      this.agent.displayMessage(content);
+      if (useDelegate) {
+        return content;
+      } else {
+        this.agent.displayMessage(content);
+      }
     }
   }
 }
