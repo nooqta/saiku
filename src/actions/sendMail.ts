@@ -8,7 +8,7 @@ export default class SendEmailAction implements Action {
   agent: Agent;
   name = "send_email";
   description = "Send an email";
-  arguments = [
+  parameters =[
     { name: "to", type: "string", required: true },
     { name: "subject", type: "string", required: true },
     { name: "text", type: "string", required: true },

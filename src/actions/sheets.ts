@@ -19,7 +19,7 @@ export default class SheetAction extends GoogleDrive implements Action {
   agent: Agent;
   name = "google_sheet";
   description = "Manage Google Sheets files";
-  arguments = [
+  parameters =[
     {
       name: "operation",
       type: "string",

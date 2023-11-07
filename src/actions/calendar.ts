@@ -33,7 +33,7 @@ interface CalendarArgs {
   agent: Agent;
   name = "google_calendar";
   description = "Manage Google Calendar events";
-  arguments = [
+  parameters =[
     {
       name: "operation",
       type: "string",

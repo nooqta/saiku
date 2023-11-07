@@ -9,7 +9,7 @@ export default class GitLabQueryAction implements Action {
     dependencies = ["openai","node-fetch","dotenv"];
     name = "gitlab_query";
     description = "Ask a question about your GitLab projects and get an answer!";
-    arguments = [
+    parameters =[
         { name: "question", type: "string", required: true, description: "Your question related to GitLab projects." }
     ];
     openai: any;

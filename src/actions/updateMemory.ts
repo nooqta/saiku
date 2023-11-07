@@ -4,7 +4,7 @@ import { Action } from "../interfaces/action";
 class UpdateMemory implements Action {
     name = "update_memory";
     description = "Updates the agent's memory with the given key-value pairs";
-    arguments = [];
+    parameters =[];
     agent: any;
     // Constructor
   constructor(agent: Agent) {

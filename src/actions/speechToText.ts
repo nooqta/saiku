@@ -20,7 +20,7 @@ export default class SpeechToTextAction implements Action {
   agent: Agent;
   name = "speech_to_text";
   description = "Transcribe audio to text";
-  arguments = [{ name: "audioFilename", type: "string", required: false }];
+  parameters =[{ name: "audioFilename", type: "string", required: false }];
 
   
   private audioFilename = 'recording.wav';

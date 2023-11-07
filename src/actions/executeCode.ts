@@ -172,7 +172,7 @@ export default class ExecuteCodeAction implements Action {
   agent: Agent;
   name = "execute_code";
   description = "Execute code in a specific language";
-  arguments = [
+  parameters =[
     {
       name: "language",
       type: "array",

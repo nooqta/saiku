@@ -11,7 +11,7 @@ export default class MoleculeStructureAction implements Action {
   name = "molecule_structure";
   description = "Generates an image of a molecule structure using PubChem";
 
-  arguments = [
+  parameters =[
     {
       name: "input",
       type: "string",

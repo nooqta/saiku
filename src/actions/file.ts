@@ -8,7 +8,7 @@ export default class FileAction implements Action {
     agent: Agent;
     name = 'file_action';
     description = 'Save content to a file or read content from a file';
-    arguments = [
+    parameters =[
         { name: 'operation', type: 'string', required: true, enum: ['read', 'write'], description: 'Operation to perform: read or write' },
         { name: 'filename', type: 'string', required: true },
         { name: 'content', type: 'string', required: false, description: 'Content to save. Required for write operation.' }

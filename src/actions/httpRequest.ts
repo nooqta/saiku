@@ -9,7 +9,7 @@ export default class HTTPRequestAction implements Action {
   
     name = 'http_request';
     description = 'Make HTTP requests to specific URL including API\'s.';
-    arguments = [
+    parameters =[
       { name: 'intent', type: 'string', required: true, description: 'A description of the current API request.'},
       { name: 'url', type: 'string', required: true, description: 'API URL' },
       { name: 'method', type: 'string', required: true, description: 'HTTP Method' },

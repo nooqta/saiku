@@ -7,7 +7,7 @@ export default class PromptUserAction implements Action {
     agent: Agent;
     name = 'prompt_user';
     description = 'Prompt the user for input based on a specified message and type. The choices argument is only required for select and multiselect types.';
-    arguments = [
+    parameters =[
         { name: 'message', type: 'string', required: true },
         { name: 'type', type: 'array', required: true, items: { type: 'string', enum: ['text', 'number', 'confirm', 'select', 'multiselect', 'autocomplete'] } },
         { name: 'choices', type: 'array', required: false, items: { type: 'string'} }, // only required for select and multiselect types

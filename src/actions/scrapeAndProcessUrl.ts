@@ -9,7 +9,7 @@ export default class ScrapeAndProcessURLAction implements Action {
   name = "scrape_and_process_url";
   description =
     "Scrape a URL and process its content based on the provided query. Use only when you need the content visible from the browser.";
-  arguments = [
+  parameters =[
     { name: "url", type: "string", required: true },
     { name: "query", type: "string", description: "The query to process",
     required: true },

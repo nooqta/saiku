@@ -42,7 +42,8 @@ class Agent implements IAgent {
     }
     this.init();
     // Load actions from the specified actionsPath.
-    this.loadFunctions(options.actionsPath);
+    // this.loadFunctions(options.actionsPath);
+    this.loadAllFunctions(options.actionsPath);
     this.actions = this.getFunctionsDefinitions();
   }
   init() {
@@ -112,7 +113,7 @@ class Agent implements IAgent {
               ]
             : this.currentMessages,
         model: this.model.name,
-        ...(useFunctionCalls ? { functions: functions } : {})
+        ...(useFunctionCalls ? { tools: functions,  tool_choice: "auto" } : {})
   
       });
   
@@ -165,6 +166,16 @@ class Agent implements IAgent {
       renderer: new TerminalRenderer(),
     });
     console.log(marked(message));
+  }
+  private loadAllFunctions(actionsPath: string) {
+    const actionFiles = fs.readdirSync(
+      join(path.resolve(__dirname, actionsPath))
+    );
+    actionFiles.forEach((file) => {
+      const actionClass = require(path.join(actionsPath, file)).default;
+      const actionInstance: Action = new actionClass(this);
+      this.functions[actionInstance.name] = actionInstance;
+    });
   }
   private loadFunctions(actionsPath: string) {
     let actionFiles = fs.readdirSync(
@@ -322,30 +333,35 @@ class Agent implements IAgent {
     const actions = Object.values(this.functions).map((action) => ({
       name: action.name,
       description: action.description,
-      arguments: action.arguments,
+      parameters: action.parameters,
     }));
+
     return actions.map((action: any) => ({
-      name: action.name,
-      description: action.description,
-      parameters: {
-        type: "object",
-        properties: action.arguments.reduce((acc: any, arg: any) => {
-          acc[arg.name] = { type: arg.type };
-          if (arg.description) {
-            acc[arg.name].description = arg.description;
-          }
-          if (arg.type === "array" && arg.items) {
-            // Include items if the type is array and items is defined
-            acc[arg.name].items = arg.items;
-          }
-          return acc;
-        }, {}),
+      type: "function",
+      function: {
+        name: action.name,
+        description: action.description,
+        parameters: {
+          type: "object",
+          properties: action.parameters.reduce((acc: any, arg: any) => {
+            acc[arg.name] = { 
+              type: arg.type, 
+              description: arg.description || '' // Include description if available
+            };
+            if (arg.type === "array" && arg.items) {
+              // Include items if the type is array and items is defined
+              acc[arg.name].items = arg.items;
+            }
+            return acc;
+          }, {}),
+          required: action.parameters
+            .filter((arg: any) => arg.required)
+            .map((arg: any) => arg.name),
+        },
       },
-      required: action.arguments
-        .filter((arg: any) => arg.required)
-        .map((arg: any) => arg.name),
     }));
-  }
+}
+
 }
 
 export default Agent;

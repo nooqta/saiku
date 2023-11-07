@@ -9,7 +9,7 @@ export default class GoogleDocsAction extends GoogleDrive implements Action {
     agent: Agent;
     name = 'google_docs';
     description = 'Create, update, and manage Google Docs documents';
-    arguments = [
+    parameters =[
       {
         name: 'operation',
         type: 'string',

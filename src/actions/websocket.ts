@@ -11,7 +11,7 @@ export default class WebsocketAction implements Action {
   name = "websocket_server";
   description =
     "Starts a websocket server for real-time communication with the agent.";
-  arguments = [
+  parameters =[
     {
       name: "htmlContent",
       type: "string",

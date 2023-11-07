@@ -10,7 +10,7 @@ export default class WordParseAction implements Action {
   agent: Agent;
   name = 'word_parse';
   description = 'Parses a MS Word document from a URL or local file path and returns its content.';
-  arguments = [
+  parameters =[
     { name: 'url', type: 'string', required: true, description: 'URL or local file path of the Word document' },
   ];
 

@@ -7,7 +7,7 @@ export default class HTMLToPDFAction implements Action {
     agent: Agent;
     name = "html_to_pdf";
     description = "Create a PDF from HTML content";
-    arguments = [
+    parameters =[
         { name: "htmlContent", type: "string", required: true, description: "The HTML content to convert to PDF." },
         { name: "outputPath", type: "string", required: true, description: "The path where the PDF should be saved." }
     ];

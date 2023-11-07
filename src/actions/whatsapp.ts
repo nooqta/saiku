@@ -8,7 +8,7 @@ export default class WhatsAppAction implements Action {
     dependencies = ["whatsapp-web.js","qrcode-terminal"];
   name = "whatsapp";
   description = "Send and reply to WhatsApp messages using OpenAI";
-  arguments = [
+  parameters =[
     // Define the arguments as needed, for example:
     {
       name: "recipient",

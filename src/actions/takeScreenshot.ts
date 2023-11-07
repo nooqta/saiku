@@ -8,7 +8,7 @@ export default class TakeScreenshotAction implements Action {
   agent: Agent;
   name = "take_screenshot";
   description = "Capture a screenshot of a webpage";
-  arguments = [
+  parameters =[
     { name: "url", type: "string", required: true },
     { name: "fullPage", type: "boolean", required: true, default: true },
     {

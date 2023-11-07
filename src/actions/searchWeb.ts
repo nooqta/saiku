@@ -6,7 +6,7 @@ export default class SearchWebAction implements Action {
   agent: Agent;
   name = 'search_web';
   description = 'Perform a web search using Google Custom Search JSON API';
-  arguments = [
+  parameters =[
     { name: 'query', type: 'string', required: true },
   ];
   

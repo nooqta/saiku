@@ -11,7 +11,7 @@ export default class GitAction implements Action {
   agent: Agent;
   name = 'git_action';
   description = 'Perform common Git operations';
-  arguments = [
+  parameters =[
     { name: 'operation', type: 'string', required: true, enum: ['clone', 'add', 'commit', 'push', 'pull', 'init'], description: 'Git operation to perform' },
     { name: 'repository', type: 'string', required: false },
     { name: 'path', type: 'string', required: false },

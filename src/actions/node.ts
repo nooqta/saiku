@@ -11,7 +11,7 @@ export default class NodeAction implements Action {
   agent: Agent;
   name = "browser_interact";
   description = "Interacts with the browser through an internal agent.";
-  arguments = [
+  parameters =[
     {
       name: "input",
       type: "string",
@@ -149,7 +149,7 @@ Ensure to send the correctly formatted message for desired actions.
         this.socket.on("message_response", async (data: any) => {
           console.log("Received message from the Chrome extension.");
           this.worker.messages.push({
-            role: "function",
+            role: "tool",
             name: "chrome",
             content: JSON.stringify(data),
           });

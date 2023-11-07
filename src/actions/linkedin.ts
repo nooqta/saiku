@@ -11,7 +11,7 @@ export default class LinkedInPostAction implements Action {
   agent: Agent;
   name = "linkedin_post";
   description = "Post content to LinkedIn";
-  arguments = [
+  parameters =[
     { name: "content", type: "string", required: true, description: "The content to post on LinkedIn." },
   ];
 

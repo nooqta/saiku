@@ -8,7 +8,7 @@ export default class GoogleVisionAction implements Action {
     dependencies = ["@google-cloud/vision","axios"];
   name = "google_vision";
   description = "Analyze an image using Google Cloud Vision API";
-  arguments = [
+  parameters =[
     { name: "imageSource", type: "string", required: true },
     { name: "features", type: "array", required: true, items: { type: "string", enum: ["DOCUMENT_TEXT_DETECTION", "FACE_DETECTION", "LABEL_DETECTION", "IMAGE_PROPERTIES", "WEB_DETECTION"] }}
   ];

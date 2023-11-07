@@ -315,14 +315,14 @@ class PlanningAgent implements IAgent {
     const actions = Object.values(this.functions).map((action) => ({
       name: action.name,
       description: action.description,
-      arguments: action.arguments,
+      parameters: action.parameters,
     }));
     return actions.map((action: any) => ({
       name: action.name,
       description: action.description,
       parameters: {
         type: "object",
-        properties: action.arguments.reduce((acc: any, arg: any) => {
+        properties: action.parameters.reduce((acc: any, arg: any) => {
           acc[arg.name] = { type: arg.type };
           if (arg.description) {
             acc[arg.name].description = arg.description;
@@ -334,7 +334,7 @@ class PlanningAgent implements IAgent {
           return acc;
         }, {}),
       },
-      required: action.arguments
+      required: action.parameters
         .filter((arg: any) => arg.required)
         .map((arg: any) => arg.name),
     }));

@@ -10,7 +10,7 @@ export default class PDFParseAction implements Action {
   agent: Agent;
   name = 'parse_pdf';
   description = 'Parses a PDF file from a URL or local file path and returns its content.';
-  arguments = [
+  parameters =[
     { name: 'url', type: 'string', required: true, description: 'URL or local file path of the PDF' },
   ];
 // Constructor

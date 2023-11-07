@@ -9,7 +9,7 @@ export default class ChatAction implements Action {
     agent: Agent;
     name = "chat";
     description = "Chat with agent on a browser.";
-    arguments = [
+    parameters =[
     ];
 // Constructor
 constructor(agent: Agent) {

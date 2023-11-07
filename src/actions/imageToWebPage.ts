@@ -39,7 +39,7 @@ export default class ImageToWebPageAction implements Action {
     dependencies = ["@google-cloud/vision","openai","sharp"];
   name = "image_to_web_page";
   description = "Generate HTML and CSS from an image of a web page design";
-  arguments = [
+  parameters =[
     {
       name: "imagePath",
       type: "string",

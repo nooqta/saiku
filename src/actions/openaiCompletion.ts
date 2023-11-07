@@ -9,7 +9,7 @@ export default class OpenAICompletionAction implements Action {
   agent: Agent;
   name = 'openai_completion';
   description = 'Generate completions using the OpenAI API.';
-  arguments = [
+  parameters =[
     { name: 'userQuery', type: 'string', required: true },
   ];
 public systemMessage = 'You are a helpful assistant.';

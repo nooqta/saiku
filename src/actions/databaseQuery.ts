@@ -15,7 +15,7 @@ export default class DatabaseQueryAction implements Action {
   agent: Agent;
   name = "database_query";
   description = "Execute a database query";
-  arguments = [
+  parameters =[
     { name: "database", type: "string", required: false },
     { name: "query", type: "string", required: true },
     { name: "values", type: "array", required: false, items: { type: "string" } },

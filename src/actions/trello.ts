@@ -9,7 +9,7 @@ export default class TrelloAction implements Action {
   agent: Agent;
   name = "trello";
   description = "Interact with Trello to list cards, add cards, or search across boards, cards, and members based on a query.";
-  arguments = [
+  parameters =[
     {
       name: "action",
       type: "string",

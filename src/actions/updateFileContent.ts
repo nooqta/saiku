@@ -7,7 +7,7 @@ export default class UpdateFileContentAction implements Action {
     agent: Agent;
     name = "update_file_content";
     description = "Update part of a file's content using a regular expression pattern";
-    arguments = [
+    parameters =[
         { name: "pattern", type: "string", required: true, description: "The regular expression pattern to search for in the file." },
         { name: "replacement", type: "string", required: true, description: "The content to replace the matched pattern with." },
         { name: "filename", type: "string", required: true, description: "The path to the file that needs updating." }

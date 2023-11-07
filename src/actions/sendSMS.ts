@@ -8,7 +8,7 @@ export default class SendSMSTwilioAction implements Action {
     agent: Agent;
     name = "send_sms_twilio";
     description = "Send an SMS using Twilio";
-    arguments = [
+    parameters =[
         { name: "to", type: "string", required: true, description: "The phone number to send the SMS to." },
         { name: "body", type: "string", required: true, description: "The content of the SMS message." },
         { name: "from", type: "string", required: true, description: "The Twilio phone number to send the SMS from." }

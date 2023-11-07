@@ -10,7 +10,7 @@ class TextToSpeechAction implements Action {
   agent: Agent;
   name = 'text_to_speech';
   description = 'Converts text to speech and returns the path to the generated audio file.';
-  arguments = [
+  parameters =[
     {
       name: 'text',
       type: 'string',

@@ -81,7 +81,7 @@ export default class TextSummarizerAction implements Action {
   agent: Agent;
   name = "text_summarizer";
   description = "Incrementally summarizes text using a specified model";
-  arguments = [
+  parameters =[
     {
       name: "text",
       type: "string",
