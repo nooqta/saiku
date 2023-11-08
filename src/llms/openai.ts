@@ -55,7 +55,7 @@ export default class OpenAIModel implements LLM {
       const content = decision.choices[0].message.content;
       return {
         text: toolCalls.length > 0 ? toolCalls : content || "",
-        message:decision.choices[0].message,
+        message: decision.choices[0].message,
         model: request.model || "gpt-3.5-turbo",
       };
     } catch (error) {
@@ -69,7 +69,6 @@ export default class OpenAIModel implements LLM {
 
     const toolCalls = Array.isArray(decision.text) ? decision.text : [];
     const content = typeof decision.text === "string" ? decision.text : null;
-    
     this.agent.messages.push(decision.message);
     if (content) {
       if (useDelegate) {

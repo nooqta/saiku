@@ -46,7 +46,7 @@ export default async function create(agent: Agent) {
     agent.messages.push({
       role: "user",
       content: `${answer},\n
-      save a ready to use action class to ${path.join(process.cwd(), 'actions', filename)}} based on the user's description. 
+      save a ready to use action class to ${path.join(process.cwd(), 'src','actions', filename)}} based on the user's description. 
     
     Example  class:
     import { Action } from '../interfaces/action';
