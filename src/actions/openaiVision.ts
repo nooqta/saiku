@@ -51,12 +51,15 @@ async downloadVideo(url: string) {
     }
 
     const filePath = path.join(tempDir, `downloaded_${Date.now()}.mp4`);
-
     if (ytdl.validateURL(url)) {
         // For YouTube videos
         try {
+            const videoID = ytdl.getURLVideoID(url);
+            let info = await ytdl.getInfo(videoID);
+            let format = ytdl.chooseFormat(info.formats, { quality: 'highest' });
+
             await promisify(pipeline)(
-                ytdl(url, { quality: 'lowest' }),
+                ytdl(url, { quality: 'highest', format  }),
                 fs.createWriteStream(filePath)
             );
         } catch (error) {

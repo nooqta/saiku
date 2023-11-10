@@ -51,7 +51,7 @@ export default class OpenaiAudioAction implements Action {
             try {
                 await promisify(pipeline)(
                     // @ts-ignore
-                    ytdl(url, { filter: 'audioandvideo'}),
+                    ytdl(url, { filter: 'audioandvideo', quality: 'lowest'}),
                     fs.createWriteStream(filePath)
                 );
             } catch (error) {
