@@ -7,11 +7,38 @@
   - [What is PEAS?](#what-is-peas)
 - [Features](#features)
 - [Prerequisites](#prerequisites)
-- [Installation](#installation)
+  - [Optional requirements](#optional-requirements)
+    - [Google Vision](#google-vision)
+    - [Google Calendar, Docs and Sheets](#google-calendar-docs-and-sheets)
+- [1. Using Saiku in Your Own Projects](#1-using-saiku-in-your-own-projects)
+  - [Installation](#installation)
+  - [Usage](#usage)
+    - [Importing Saiku](#importing-saiku)
+    - [Initializing Saiku Agent](#initializing-saiku-agent)
+    - [Configuring Saiku](#configuring-saiku)
+    - [Interacting with Saiku](#interacting-with-saiku)
+- [2. Using the Project Itself](#2-using-the-project-itself)
+  - [Usage](#usage-1)
+    - [Clone the Repository](#clone-the-repository)
+    - [Navigate to Project Folder](#navigate-to-project-folder)
+    - [Install Dependencies](#install-dependencies)
+    - [Run the Project Locally](#run-the-project-locally)
+- [3. Global Installation (Not Recommended Yet)](#3-global-installation-not-recommended-yet)
 - [Demo](#demo)
-- [Usage](#usage)
-  - [Command Line Options](#command-line-options)
-  - [Setting Up Environment Variables](#setting-up-environment-variables)
+- [Setting Up Environment Variables](#setting-up-environment-variables)
+- [Available Commands](#available-commands)
+  - [Examples](#examples)
+- [Use Cases](#use-cases)
+  - [Use Case 1: Transcribe Audio to Text](#use-case-1-transcribe-audio-to-text)
+  - [Use Case 2: Extract Text from an Image](#use-case-2-extract-text-from-an-image)
+  - [Use Case 3: Summarize a Long Article](#use-case-3-summarize-a-long-article)
+  - [Use Case 4: HTML to PDF Conversion](#use-case-4-html-to-pdf-conversion)
+  - [Use Case 5: Take a Screenshot of a Webpage](#use-case-5-take-a-screenshot-of-a-webpage)
+  - [Use Case 6: Text to Speech](#use-case-6-text-to-speech)
+  - [Use Case 7: Create a Simple Chart](#use-case-7-create-a-simple-chart)
+  - [Use Case 8: Parse PDF Content](#use-case-8-parse-pdf-content)
+  - [Use Case 9: Perform a Database Query](#use-case-9-perform-a-database-query)
+  - [Use Case 10: File Actions (Read/Write)](#use-case-10-file-actions-readwrite)
 - [Future Features](#future-features)
 - [Contributing](#contributing)
 - [Support Saiku](#support-saiku)
@@ -75,24 +102,24 @@ PEAS stands for Performance measure, Environment, Actuators, and Sensors. It's a
 #### Google Calendar, docs and sheets
  - Download the service account JSON file from your GCP project page
 
-## Installation & Usage
 
+## 1. Using Saiku in Your Own Projects
 Saiku is a versatile tool that enhances projects with advanced functionalities. This guide will help you integrate Saiku into your applications, covering the installation, configuration, and usage.
 
-### Using Saiku in Your Own Projects
-
-#### 1. Installation
+### Installation
 
 - **Step**: Run `npm install saiku` in your project directory to add Saiku as a dependency.
 
-#### 2. Importing Saiku
+### Usage
+
+#### 1. Importing Saiku
 
 - **Code**: 
   ```javascript
   import Agent from 'saiku';
   ```
 
-#### 3. Initializing Saiku Agent
+#### 2. Initializing Saiku Agent
 
 - **Example**: 
   ```javascript
@@ -102,7 +129,7 @@ Saiku is a versatile tool that enhances projects with advanced functionalities. 
   }
   ```
 
-#### 4. Configuring Saiku
+#### 3. Configuring Saiku
 
 - **AgentOptions**:
   - **actionsPath** (`string` | `optional`): Path to custom action scripts.
@@ -126,7 +153,7 @@ Saiku is a versatile tool that enhances projects with advanced functionalities. 
   };
   ```
 
-#### 5. Interacting with Saiku
+#### 4. Interacting with Saiku
 
 - **Process**:
   - **Listening for User Input**: Implement input mechanisms for user interaction.
@@ -146,8 +173,8 @@ Saiku is a versatile tool that enhances projects with advanced functionalities. 
   } while (userQuery.toLowerCase() !== "quit");
   ```
 
-### Using Saiku Project Itself
-
+## 2. Using the project itself
+### Usage
 - **Clone the Repository**:
   ```bash
   git clone https://github.com/nooqta/saiku.git
@@ -163,7 +190,29 @@ Saiku is a versatile tool that enhances projects with advanced functionalities. 
   npm install
   ```
 
-### Global Installation (Not Recommended Yet)
+
+- **Run the Project Locally**:
+
+Before starting Saiku locally, build the project using the following command:
+
+```
+npm run build
+```
+
+To start the agent:
+
+```
+npm start
+```
+
+For automated building during development, use:
+
+```
+npm run watch
+```
+
+This will automatically build the project whenever files are changed, helping streamline the development process.
+## 3. Global Installation (Not Recommended Yet)
 
 Saiku is available globally but is still in early development. Local installation is recommended.
 
@@ -192,29 +241,6 @@ https://github.com/nooqta/saiku/assets/3036133/c8f8a983-20c6-4404-a8ad-16c3d9fab
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nooqta/saiku/blob/main/saiku-demo-notebook.ipynb)
 
-## Usage
-
-### Running the Project Locally
-
-Before starting Saiku locally, build the project using the following command:
-
-```
-npm run build
-```
-
-To start the agent:
-
-```
-npm start
-```
-
-For automated building during development, use:
-
-```
-npm run watch
-```
-
-This will automatically build the project whenever files are changed, helping streamline the development process.
 ### Setting Up Environment Variables
 
 Before running Saiku, configure the necessary environment variables. Copy the example environment file and then fill in the details.
@@ -286,7 +312,7 @@ Commands:
   serve                        Chat with the Saiku agent in the browser.
 ```
 
-## Examples:
+#### Examples:
 
 To allow code execution without prompting:
 
@@ -314,6 +340,20 @@ saiku -m huggingface
 or
 ```
 npm start -- --llm huggingface
+```
+
+To chat with Saiku in the browser
+```
+saiku serve
+# or
+npm start -- serve
+```
+
+To create a new action
+```
+saiku action create
+# or
+npm start -- action create
 ```
 
 ## Use cases
