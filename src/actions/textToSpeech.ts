@@ -1,16 +1,17 @@
-import fetch from 'node-fetch';
 import fs from 'fs';
 import { Action } from '@/interfaces/action';
 import dotenv from 'dotenv'; 
 import Agent from '@/agents/agent';
 import os from 'os';
+import OpenAI from 'openai';
 
 dotenv.config();
+
 class TextToSpeechAction implements Action {
   agent: Agent;
   name = 'text_to_speech';
   description = 'Converts text to speech and returns the path to the generated audio file.';
-  parameters =[
+  parameters = [
     {
       name: 'text',
       type: 'string',
@@ -25,72 +26,49 @@ class TextToSpeechAction implements Action {
       default: true
     }
   ];
-// Constructor
-constructor(agent: Agent) {
-  this.agent = agent;
-}
+
+  constructor(agent: Agent) {
+    this.agent = agent;
+  }
+
   async run(args: { text: string, play: boolean }): Promise<string> {
-    const { text } = args;
+    const { text, play } = args;
+
     if (os.platform() === 'darwin') {
-      // we use execute_code action and Siri to speak the text
+      // For macOS, use 'say' command
       await this.agent.functions["execute_code"].run({ code: `say "${text}"`, language: 'applescript' });
-      // @todo: add support for other platforms
-      return `text spoken: ${text}`;
-    }
-    let voice_id = '21m00Tcm4TlvDq8ikWAM';
-    const url = `https://api.elevenlabs.io/v1/text-to-speech/${voice_id}/stream`;
-    const headers = {
-      Accept: 'audio/mpeg',
-      'xi-api-key': process.env.ELEVENLABS_API_KEY, // Use environment variable
-      'Content-Type': 'application/json'
-    };
+      return `Text spoken on macOS using Siri: ${text}`;
+    } else {
+      try {
+        const openai = new OpenAI({
+          apiKey: process.env.OPENAI_API_KEY
+        }); // OpenAI API key from environment variable
+        const speechResponse = await openai.audio.speech.create({
+          model: "tts-1",
+          voice: "alloy",
+          input: text,
+        });
 
-    const reqBody = JSON.stringify({
-      text: text,
-      model_id: 'eleven_multilingual_v2',
-      voice_settings: {
-        stability: 1,
-        similarity_boost: 0.5
-      }
-    });
+        const audioBuffer = Buffer.from(await speechResponse.arrayBuffer());
+        const audioFilePath = 'speak.mp3'; // Path for the audio file
+        fs.writeFileSync(audioFilePath, audioBuffer);
 
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        // @ts-ignore
-        headers: headers,
-        body: reqBody
-      });
+        // Play the audio file if required
+        if (play) {
+          const util = require('util');
+          const exec = util.promisify(require('child_process').exec);
 
-      if (!response.ok) {
-        return JSON.stringify(`Speech to Text failed: ${response.statusText}`);
-      }
-
-      // Assuming the response is the audio data
-      const audioBuffer = await response.buffer();
-      
-      // Save the audio file to the desired location
-      const audioFilePath = 'speak.mp3'; // Update the path as needed
-      fs.writeFileSync(audioFilePath, audioBuffer);
-      // if(args.play) {
-        // Play the audio file
-        const util = require('util');
-        const exec = util.promisify(require('child_process').exec);
-        // for mac
-        if(process.platform === 'darwin') {
-          await exec(`afplay ${audioFilePath}`);
-        } else if(process.platform === 'linux') {
-          // for linux
-          await exec(`play ${audioFilePath}`);
-        } else {
-          // for windows
-          await exec(`start ${audioFilePath}`);
+          if (os.platform() === 'linux') {
+            await exec(`play ${audioFilePath}`);
+          } else if (os.platform() === 'win32') {
+            await exec(`start ${audioFilePath}`);
+          }
         }
-      // }      
-      return `text spoken using: ${audioFilePath}`;
 
-    } catch (error) {
-      return JSON.stringify(error);
+        return `Text spoken using OpenAI and saved to: ${audioFilePath}`;
+      } catch (error: any) {
+        return JSON.stringify(`Error in Text to Speech: ${error.message}`);
+      }
     }
   }
 }

@@ -54,7 +54,10 @@ PEAS stands for Performance measure, Environment, Actuators, and Sensors. It's a
 ## Prerequisites
 
 - Node.js installed
-- API keys from OpenAI and ElevenLabs
+- OpenAI API key
+
+### Optional requirements
+#### Google Vision
 - Google Cloud SDK installed and configured with a project:
   - Install [Google Cloud SDK](https://cloud.google.com/sdk/docs/install)
   - Authenticate with Google Cloud: 
@@ -69,8 +72,9 @@ PEAS stands for Performance measure, Environment, Actuators, and Sensors. It's a
   - Visit the [Google Cloud Console](https://console.cloud.google.com/)
   - Navigate to the 'APIs & Services > Dashboard' 
   - Click on '+ ENABLE APIS AND SERVICES', search for 'Vision API' and enable it.
-
-
+#### Google Calendar, docs and sheets
+ - Download the service account JSON file from your GCP project page
+ 
 ## Installation
 
 Clone this repository:
