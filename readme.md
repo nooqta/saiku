@@ -74,28 +74,110 @@ PEAS stands for Performance measure, Environment, Actuators, and Sensors. It's a
   - Click on '+ ENABLE APIS AND SERVICES', search for 'Vision API' and enable it.
 #### Google Calendar, docs and sheets
  - Download the service account JSON file from your GCP project page
- 
+
 ## Installation
 
-Clone this repository:
+Saiku is a versatile tool that enhances projects with advanced functionalities. This guide will help you integrate Saiku into your applications, covering the installation, configuration, and usage.
 
-```
-git clone https://github.com/nooqta/saiku.git
-```
+### Using Saiku in Your Own Projects
 
-Navigate to the project folder:
+#### 1. Installation
 
-```
-cd saiku
-```
+- **Step**: Run `npm install saiku` in your project directory to add Saiku as a dependency.
 
-Install dependencies:
+#### 2. Importing Saiku
 
-```
-npm install
-```
+- **Code**: 
+  ```javascript
+  import Agent from 'saiku';
+  ```
+
+#### 3. Initializing Saiku Agent
+
+- **Example**: 
+  ```javascript
+  async function main(opts) {
+    const agent = new Agent(opts); // Initialize the agent
+    // Additional initialization code
+  }
+  ```
+
+#### 4. Configuring Saiku
+
+- **AgentOptions**:
+  - **actionsPath** (`string` | `optional`): Path to custom action scripts.
+  - **systemMessage** (`string` | `optional`): Default system message or instructions.
+  - **allowCodeExecution** (`boolean` | `optional`): Flag to enable/disable code execution.
+  - **interactive** (`boolean` | `string` | `optional`): Interactive mode setting.
+  - **speech** (`'input' | 'output' | 'both' | 'none'`): Configures speech functionality.
+  - **llm** (`'openai' | 'vertexai' | 'ollama' | 'huggingface'`): Specifies the language learning model. Default is `'openai'`.
+  - **[key: string]: any** (`optional`): Allows additional custom properties for unique project requirements.
+
+- **Example Configuration**:
+  ```javascript
+  let opts = {
+    actionsPath: "../actions",
+    systemMessage: "Welcome to Saiku",
+    allowCodeExecution: true,
+    interactive: true,
+    speech: "both",
+    llm: "openai",
+    // Custom options
+  };
+  ```
+
+#### 5. Interacting with Saiku
+
+- **Process**:
+  - **Listening for User Input**: Implement input mechanisms for user interaction.
+  - **Processing Queries**: The agent processes and performs actions based on queries.
+  - **Generating Responses**: Generates responses or results from actions.
+  - **Speaking Output**: For speech-enabled applications, configure spoken output.
+
+- **Example Interaction**:
+  ```javascript
+  do {
+    let userQuery = await getUserInput(); // Get user input
+    agent.messages.push({ role: "user", content: userQuery });
+
+    await agent.interact(); // Process and perform actions
+    
+    // Additional code
+  } while (userQuery.toLowerCase() !== "quit");
+  ```
+
+### Using Saiku Project Itself
+
+- **Clone the Repository**:
+  ```bash
+  git clone https://github.com/nooqta/saiku.git
+  ```
+
+- **Navigate to Project Folder**:
+  ```bash
+  cd saiku
+  ```
+
+- **Install Dependencies**:
+  ```bash
+  npm install
+  ```
 
 ### Global Installation (Not Recommended Yet)
+
+Saiku is available globally but is still in early development. Local installation is recommended.
+
+```bash
+npm install -g saiku
+```
+
+### Documentation and API
+
+For detailed documentation and API usage, refer to the upcoming Saiku documentation, which will provide comprehensive guidance for advanced uses.
+
+---
+
+This guide is designed to provide clarity and ease of use for integrating Saiku into various projects, catering to a wide range of developers.
 
 Although Saiku is available as an npm package, we are still in the early stages of development, and drastic changes to the architecture will occur. We don't recommend installing it globally yet. However, if you still wish to do so:
 

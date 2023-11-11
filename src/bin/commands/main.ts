@@ -2,10 +2,11 @@ import {prompt} from 'prompts';
 // @ts-ignore
 import { requiresm } from 'esm-ts';
 import Agent from '../../agents/agent';
+import { AgentOptions } from '@/interfaces/agent';
 
 
-async function main(opts: any) {
-  let { speech, interactive} = opts;
+async function main(opts: AgentOptions) {
+  let { speech = 'none', interactive} = opts;
   interactive = interactive === 'false' ? false : true;
   // Initialize the agent
   // @todo: allow the user to specify multiple actions paths
