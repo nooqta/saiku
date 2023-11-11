@@ -75,7 +75,7 @@ PEAS stands for Performance measure, Environment, Actuators, and Sensors. It's a
 #### Google Calendar, docs and sheets
  - Download the service account JSON file from your GCP project page
 
-## Installation
+## Installation & Usage
 
 Saiku is a versatile tool that enhances projects with advanced functionalities. This guide will help you integrate Saiku into your applications, covering the installation, configuration, and usage.
 
@@ -263,7 +263,7 @@ GITLAB_VERSION=
 GITLAB_API_VERSION=
 ```
 
-### Command Line Options
+### Available Commands
 
 Use Saiku with various options to tailor its operation to your needs:
 
@@ -281,7 +281,7 @@ Options:
   -h, --help                   Display help for command.
 
 Commands:
-  action [options]             Create an action using AI (TODO).
+  action [options]             Manage actions: create an new action using AI, list available actions and activate an action.
   autopilot [options]          AI agent to help automate your tasks on autopilot mode (in progress).
   serve                        Chat with the Saiku agent in the browser.
 ```
@@ -316,7 +316,57 @@ or
 npm start -- --llm huggingface
 ```
 
+## Use cases
 
+### Use Case 1: Transcribe Audio to Text
+
+Prompt Example: "Please transcribe the audio from interview.mp3."
+Description: Saiku will use the speech_to_text function to transcribe the audio file interview.mp3 and provide the user with the text content.
+
+### Use Case 2: Extract Text from an Image
+
+Prompt Example: "Extract text from this photo image_of_document.jpg."
+Description: Saiku will use google_vision with the DOCUMENT_TEXT_DETECTION feature to analyze the image image_of_document.jpg and return any readable text found in the image.
+
+### Use Case 3: Summarize a Long Article
+
+Prompt Example: "Summarize the following article content for me: ...(article text)..."
+Description: Saiku utilizes the text_summarizer function to produce a concise summary of the provided article text.
+
+### Use Case 4: HTML to PDF Conversion
+
+Prompt Example: "Convert this HTML code to a PDF file and save it as report.pdf."
+Description: Saiku employs the html_to_pdf tool to transform the given HTML code into a PDF document and saves it with the filename report.pdf.
+
+### Use Case 5: Take a Screenshot of a Webpage
+
+Prompt Example: "Take a full-page screenshot of the website at http://example.com and name the file screenshot.png."
+Description: Saiku uses the take_screenshot feature, set to capture the full page, to create an image file screenshot.png of the URL provided.
+
+### Use Case 6: Text to Speech
+
+Prompt Example: "Please convert the following text to speech: Hello World!."
+Description: Saiku runs the text_to_speech function to convert the text "Hello World!" into an audio file and will play it if the user requests.
+
+### Use Case 7: Create a Simple Chart
+
+Prompt Example: "Make a pie chart with this data: { 'Data A': 30, 'Data B': 70 }."
+Description: Using the d3_chart_generation, Saiku will generate a pie chart image based on the data provided.
+
+### Use Case 8: Parse PDF Content
+
+Prompt Example: "Extract the text from the PDF file named report.pdf."
+Description: Saiku will apply the parse_pdf function to read the PDF file report.pdf and extract its text content.
+
+### Use Case 9: Perform a Database Query
+
+Prompt Example: "Perform a SQL query SELECT * FROM users on the local userDB database."
+Description: Saiku executes the database_query action, running the provided SQL query on the specified database.
+
+### Use Case 10: File Actions (Read/Write)
+
+Prompt Example: "Create a text file named notes.txt with the following content: Meeting notes...."
+Description: Saiku will utilize the file_action function to write the provided content into a new text file called notes.txt.
 ## Future Features
 
 - ~~**Incorporation of Diverse Models**: While currently relying on OpenAI and its code interpreter, future versions of Saiku aim to incorporate various other AI and LLM models to enhance its capabilities and versatility~~
