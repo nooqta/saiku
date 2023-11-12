@@ -356,7 +356,7 @@ saiku action create
 npm start -- action create
 ```
 
-## Use cases
+## Use Cases
 
 ### Use Case 1: Transcribe Audio to Text
 
