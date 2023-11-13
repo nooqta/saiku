@@ -1,5 +1,5 @@
 # Saiku (細工) The AI Agent
-
+<b><a href="https://noqta.mintlify.app/">Read our documentation</a></b>
 ## Table of Contents
 
 - [About](#about)
