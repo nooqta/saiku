@@ -150,7 +150,7 @@ export class SocketAdapterModel implements LLM {
         content,
       });
 
-      if (["both", "output"].includes(this.agent.options.speech)) {
+      if (["both", "output"].includes(this.agent.options.speech || 'none')) {
         await this.agent.speak(content);
       }
       if (useDelegate) {

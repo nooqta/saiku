@@ -154,7 +154,7 @@ Ensure to send the correctly formatted message for desired actions.
             content: JSON.stringify(data),
           });
           const content = await this.worker.think();
-          if (["both", "output"].includes(this.worker.options.speech)) {
+          if (["both", "output"].includes(this.worker.options.speech || 'none')) {
             await this.worker.speak(content.text);
           }
           this.worker.displayMessage(content.text);

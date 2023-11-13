@@ -304,7 +304,7 @@ class PlanningAgent implements IAgent {
         content,
     });
     
-    if (["both", "output"].includes(this.options.speech)) {
+    if (["both", "output"].includes(this.options.speech || 'none')) {
         await this.speak(content);
     }
     console.log(marked(content));

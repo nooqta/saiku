@@ -10,7 +10,7 @@ async function main(opts: AgentOptions) {
   interactive = interactive === 'false' ? false : true;
   // Initialize the agent
   // @todo: allow the user to specify multiple actions paths
-  const agent = new Agent({ actionsPath: "../actions", ...opts });
+  const agent = new Agent(opts);
   agent.options = { ...agent.options, ...opts };
   let userQuery = "";
   agent.systemMessage = opts.systemMessage ||
