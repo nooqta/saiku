@@ -43,7 +43,7 @@ class Agent implements IAgent {
     this.init();
     // Load actions from the specified actionsPath.
     // this.loadFunctions(options.actionsPath);
-    this.loadAllFunctions(options.actionsPath);
+    this.loadAllFunctions(options.actionsPath || "../actions");
     this.actions = this.getFunctionsDefinitions();
   }
   init() {
@@ -143,7 +143,7 @@ class Agent implements IAgent {
           content: text,
         }
       ],
-      model: process.env.OPENAI_MODEL || "gpt-3.5-turbo",
+      model: process.env.OPENAI_MODEL || "gpt-4-1106-preview",
       max_tokens: 64,
       temperature: 0.8,
     }); // Add 'as any' to bypass the type checking error
@@ -205,11 +205,11 @@ class Agent implements IAgent {
   }
   public getAllFunctions() {
     const actionFiles = fs.readdirSync(
-      join(path.resolve(__dirname, this.options.actionsPath))
+      join(path.resolve(__dirname, this.options.actionsPath || '../actions'))
     );
     const functions : Action[]=[] ;
     actionFiles.forEach((file) => {
-      const actionClass = require(path.join(this.options.actionsPath, file)).default;
+      const actionClass = require(path.join(this.options.actionsPath || '../actions', file)).default;
       const actionInstance: Action = new actionClass(this);
       functions.push(actionInstance);
     });

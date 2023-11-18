@@ -37,7 +37,7 @@ export default class OpenAIModel implements LLM {
     this.agent = agent;
     this.apiKey = opts.apiKey || process.env.OPENAI_API_KEY || "";
     this.model = new OpenAI({ apiKey: this.apiKey });
-    this.name = process.env.OPENAI_MODEL || "gpt-3.5-turbo";
+    this.name = process.env.OPENAI_MODEL || "gpt-4-1106-preview";
     this.messages = [
       {
         role: "system",
@@ -56,7 +56,7 @@ export default class OpenAIModel implements LLM {
       return {
         text: toolCalls.length > 0 ? toolCalls : content || "",
         message: decision.choices[0].message,
-        model: request.model || "gpt-3.5-turbo",
+        model: request.model || "gpt-4-1106-preview",
       };
     } catch (error) {
       console.log(`An error occurred: ${error}`);

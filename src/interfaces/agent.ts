@@ -1,7 +1,7 @@
 import { Action } from "../interfaces/action";
 
 export interface AgentOptions {
-    actionsPath: string;
+    actionsPath?: string;
     systemMessage?: string;
     allowCodeExecution?: boolean;
     interactive?: boolean | string;

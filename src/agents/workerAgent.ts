@@ -33,7 +33,7 @@ class Agent implements IAgent {
 
   constructor(options: AgentOptions) {
     // Load actions from the specified actionsPath.
-    this.loadActions(options.actionsPath);
+    this.loadActions(options.actionsPath || '../actions');
     if (options.systemMessage) {
       this.systemMessage = options.systemMessage;
     }

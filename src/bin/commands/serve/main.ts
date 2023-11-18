@@ -1,7 +1,6 @@
 import Agent from "./../../../agents/agent";
 import path from "path";
 import { existsSync } from "fs";
-import { spawn } from "child_process";
 
 async function main(opts: any) {
   // @todo: allow the user to specify multiple actions paths

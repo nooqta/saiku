@@ -1,56 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chat</title>
-    <link
-      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"
-      crossorigin="anonymous"
-    ></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  </head>
-
-  <body class="bg-light">
-    <div class="container my-5">
-      <div class="row">
-        <!-- Chat Input, Button and Messages -->
-        <div class="col-md-12 mb-4">
-          <div class="card h-100 overflow-auto">
-            <div class="card-body d-flex flex-column">
-              <h5 class="card-title">Chat with Agent</h5>
-              <div class="input-group mb-2">
-                <input
-                  type="text"
-                  id="userInput"
-                  class="form-control"
-                  placeholder="Enter your request"
-                  onkeydown="if(event.key === 'Enter') sendAgentRequest()"
-                />
-                <div class="input-group-append">
-                  <button
-                    onclick="sendAgentRequest()"
-                    id="sendBtn"
-                    class="btn btn-primary"
-                  >
-                    Send
-                  </button>
-                </div>
-              </div>
-              <div
-                id="messages"
-                class="mt-3 overflow-auto"
-                style="flex: 1"
-              ></div>
-            </div>
-          </div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Interface</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.x/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body class="bg-gray-100 flex flex-col h-screen">
+  <div class="flex-grow overflow-auto px-4 my-10">
+    <div class="max-w-2xl mx-auto h-full flex flex-col">
+      <!-- Chat messages area -->
+      <div class="bg-white shadow-lg rounded-lg flex-grow overflow-auto">
+        <h5 class="text-xl font-medium p-6">Chat with Agent</h5>
+        <div id="messages" class="p-6 overflow-auto">
+          <!-- Messages will be appended here -->
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Fixed input area at the bottom -->
+  <div class="p-4 bg-white border-t-2 border-gray-200 fixed inset-x-0 bottom-0 mx-auto max-w-2xl">
+    <div class="flex items-center">
+      <input type="text" id="userInput" class="flex-grow border rounded p-2 mr-4" placeholder="Enter your request" onkeydown="if(event.key === 'Enter') sendAgentRequest()"/>
+      <button onclick="sendAgentRequest()" id="sendBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        Send
+      </button>
+    </div>
+  </div>
 
     <script>
       const socket = io.connect("http://localhost:3000");
@@ -72,6 +51,46 @@
       In your selections, opt for universally compatible and versatile packages like ffmpeg and pandoc, which boast extensive support and functionality. Communicate with users employing Markdown for clarity and consistency.
       
       By using this service, users grant you full access to their machines, providing explicit consent for you to act on their behalf. Users acknowledge and accept all legal implications of this access, holding themselves responsible for any consequences that may arise.
+
+      Always use markdown to format your message.\n
+      To add a new line use <br> tag.
+      When you want to add a link use the following format: [Google](https://www.google.com)
+      When you want to add an image use the following format: ![Google Logo](https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png)
+      When you want to add a video use the following format: [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://www.youtube.com/watch?v=YOUTUBE_VIDEO_ID_HERE)
+      When you want to add an audio use the following format: [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://www.youtube.com/watch?v=YOUTUBE_VIDEO_ID_HERE)
+      When you want to add a table use the following format:
+      | First Header  | Second Header |
+      | ------------- | ------------- |
+      | Content Cell  | Content Cell  |
+      | Content Cell  | Content Cell  |
+
+      When you want to add a code block use the following format:
+      \`\`\`python
+      print("Hello World")
+      \`\`\`
+
+      When you want to add a quote use the following format:
+      > This is a quote
+
+      When you want to add a horizontal line use the following format:
+      ---
+
+      When you want to add a checkbox use the following format:
+
+      - [x] Write the press release
+      - [ ] Update the website
+      - [ ] Contact the media
+
+      When you want to add a bold text use the following format: **Bold text**
+      When you want to add an italic text use the following format: *Italic text*
+      When you want to add a strikethrough text use the following format: ~~Strike-through text~~
+      When you want to add a subscript text use the following format: <sub>Subscript text</sub>
+      When you want to add a superscript text use the following format: <sup>Superscript text</sup>
+      When you want to add a small text use the following format: <small>Small text</small>
+      When you want to add a mark text use the following format: <mark>Marked text</mark>
+      When you want to add a keyboard text use the following format: <kbd>Keyboard text</kbd>
+      When you want to display a mathematical formula use the following format: $x^2 + y^2 = z^2$
+
               `,
         },
       ];
@@ -106,7 +125,10 @@
       function appendMessage(role, message) {
         const messageDiv = document.createElement("div");
         messageDiv.className = role.toLowerCase();
-        messageDiv.innerHTML = marked.parse(`${role}: ${message}`);
+        // if we have an html tag in the message, we don't want to parse it as markdown
+        messageDiv.innerHTML = `<span class="font-bold">${role}: </span>${marked.parse(
+          message
+        )}`;
         messagesContainer.appendChild(messageDiv);
       }
     </script>

@@ -36,7 +36,7 @@ class PlanningAgent implements IAgent {
 
   constructor(options: AgentOptions) {
     // Load actions from the specified actionsPath.
-    this.loadFunctions(options.actionsPath);
+    this.loadFunctions(options.actionsPath || "../actions");
     if (options.systemMessage) {
       this.systemMessage = options.systemMessage;
     }
