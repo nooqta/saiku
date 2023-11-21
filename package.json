@@ -1,6 +1,6 @@
 {
   "name": "saiku",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "The AI agent",
   "main": "dist/bin/cli.js",
   "types": "dist/index.d.ts",
