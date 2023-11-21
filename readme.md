@@ -1,5 +1,8 @@
 # Saiku (細工) The AI Agent
 <b><a href="https://noqta.mintlify.app/">Read our documentation</a></b>
+
+Looking for the Python version? Check out [Saiku.py](https://github.com/anis-marrouchi/saiku.py).
+
 ## Table of Contents
 
 - [About](#about)
