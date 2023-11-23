@@ -20,7 +20,7 @@ export default class ImageToWebPageAction implements Action {
       name: "prompt",
       type: "string",
       required: true,
-      description: "Prompt to generate a complete HTML and CSS web page that capture every detected aspect of the image.",
+      description: "Prompt to generate a functional HTML and CSS web page that capture the layout, colors palette and disposition of element in the image.",
     },
   ];
   openai: any;
@@ -33,13 +33,13 @@ export default class ImageToWebPageAction implements Action {
 
   async run(args: any): Promise<string> {
     const imagePath = args.imagePath;
-    const prompt = args.prompt;
+    const prompt = args.prompt || "Please generate a functional HTML, js and CSS web page that capture the layout, colors palette and disposition of element in the image. respect the dimensions and disposition of the elements in the image.";
+    console.log(prompt);
     try {
       console.log("Analyzing image using OpenAI Vision...");
       const output = await this.analyzeImageWithOpenAI(imagePath, prompt);
 
       console.log("Generating HTML using OpenAI...");
-      console.log("Vision output:", output);
       fs.writeFileSync("output.html", output);
       return output;
     } catch (error) {
