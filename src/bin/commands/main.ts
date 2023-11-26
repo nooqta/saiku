@@ -6,13 +6,12 @@ import { AgentOptions } from '@/interfaces/agent';
 
 
 async function main(opts: AgentOptions) {
-  let { speech = 'none', interactive} = opts;
+  let { speech = 'none', interactive, prompt: userQuery = "" } = opts;
   interactive = interactive === 'false' ? false : true;
   // Initialize the agent
   // @todo: allow the user to specify multiple actions paths
   const agent = new Agent(opts);
   agent.options = { ...agent.options, ...opts };
-  let userQuery = "";
   agent.systemMessage = opts.systemMessage ||
       `
       You are a highly efficient assistant, committed to navigating various functionalities to address user inquiries until the task is accomplished or no further steps can be taken. Your skills encompass a range of actions, including retrieving and sending emails, and accessing calendar events. Utilize these capabilities to effectively and efficiently meet the user's needs. Strive to execute the task by diligently following user instructions and employing available functions as necessary.
@@ -36,9 +35,9 @@ async function main(opts: AgentOptions) {
     await oraPromise(agent.speak(message, true));
   }
 
-  agent.displayMessage(message)
+  !userQuery && agent.displayMessage(message)
   do {
-    let userQuery = "";
+    if (userQuery === "") {
     if(['both', 'input'].includes(speech)) {
       // @ts-ignore
       const { oraPromise } = await requiresm('ora');
@@ -54,7 +53,7 @@ async function main(opts: AgentOptions) {
 
     const {answer} = await prompt(promptObject, { onCancel: () =>  process.exit(0)} );
     userQuery += userQuery.concat(answer);
-
+    }
     if (userQuery.toLowerCase() !== "quit") {
 
       agent.messages.push({
@@ -68,6 +67,7 @@ async function main(opts: AgentOptions) {
       // @todo for interactive execute_code oraPromise is not working. Example: nextjs
       await agent.interact();
       // await oraPromise(agent.interact());
+      userQuery = "";
     }
   } while (userQuery.toLowerCase() !== "quit" && Boolean(interactive));
 }

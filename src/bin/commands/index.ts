@@ -4,13 +4,15 @@ import { Command, program } from 'commander';
 
 module.exports = (cmd: Command) => {
   cmd
+    .argument('[prompt]', 'The prompt to use for the agent')
     .option('-exec, --allowCodeExecution', 'Execute the code without prompting the user.')
     .option('-s, --speech <type>', 'Receive voice input from the user and/or output responses as speech. Possible values: input, output, both, none. Default is none', 'none')
     .option('-role, --systemMessage <role>', 'The model system role message')
     .option('-i, --interactive <mode>', 'Run the agent in interactive mode', true)
     .option('-m, --llm <model>', 'The language model to use. Possible values: openai,vertexai. Default is openai', 'openai')
     .description('AI agent to help automate your tasks')
-    .action(async (_opt: any) => {
+    .action(async (prompt, _opt: any) => {
+      _opt.prompt = prompt;
       return await main(_opt);
     });
 };
