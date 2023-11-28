@@ -18,6 +18,28 @@ dotenv.config();
 
 
 class Agent implements IAgent {
+  static loadDefaultOptions(opts: any = {}) {
+    let defaultOptions = { actionsPath: "../actions", llm: "openai" };
+    // we check if we have a saiku.jon|js file in the current working directory
+    if (fs.existsSync(path.join(process.cwd(), 'saiku.json'))) {
+      // order of precedence: defaultOptions < saiku.json < opts
+      const saikuFile = fs.readFileSync(path.join(process.cwd(), 'saiku.json'), 'utf-8');
+      const saiku = JSON.parse(saikuFile);
+      if (saiku.defaultOptions) {
+        defaultOptions = {...defaultOptions ,...saiku.defaultOptions, ...opts};
+      }
+    } 
+    // we check if we have a saiku.js file in the current working directory. If so we merge with defaultOptions
+    if (fs.existsSync(path.join(process.cwd(), 'saiku.js'))) {
+      const saikuFile = require(path.join(process.cwd(), 'saiku.js'));
+      if (saikuFile.defaultOptions) {
+        // order of precedence: defaultOptions < saiku.js < opts
+        defaultOptions = {...defaultOptions ,...saikuFile.defaultOptions, ...opts};
+
+      }
+    }
+    return defaultOptions;
+  }
   // @todo: use llm instead and allow the user to specify the model
   model!: LLM;
   score = 100;
@@ -30,7 +52,7 @@ class Agent implements IAgent {
     lastActionStatus: null,  // 'success' or 'failure'
   }; // A basic representation of agent's memory. Can be replaced with a more sophisticated data structure.
   objectives: any[] = []; // Agent's objectives.
-  options: AgentOptions = { actionsPath: "../actions", llm: "OpenAI" };
+  options: AgentOptions = { actionsPath: "../actions", llm: "openai" };
   currentObjective: any = null; // The current objective that the agent is trying to achieve.
   currentMessages: any[] = [];
   services: any = {};
@@ -101,7 +123,6 @@ class Agent implements IAgent {
       const messages = [systemMessage, ...this.messages];
       this.currentMessages = messages;
       const functions = this.actions;
-
       let decision = await this.model.predict({
         // @ts-ignore
           prompt: this.currentMessages.findLast((message:any) => message.role === 'user')?.content,

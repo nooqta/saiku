@@ -53,5 +53,5 @@ specs.txt
 .wwebjs_cache
 credentials.json
 .vercel
-saiku.json
+saiku.*
 add-deps.js

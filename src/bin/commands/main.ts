@@ -8,6 +8,9 @@ import { AgentOptions } from '@/interfaces/agent';
 async function main(opts: AgentOptions) {
   let { speech = 'none', interactive, prompt: userQuery = "" } = opts;
   interactive = interactive === 'false' ? false : true;
+  // We load the use default options from current directory saiku.json or saiku.js
+  opts = Agent.loadDefaultOptions(opts);
+  
   // Initialize the agent
   // @todo: allow the user to specify multiple actions paths
   const agent = new Agent(opts);
