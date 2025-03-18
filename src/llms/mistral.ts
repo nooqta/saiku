@@ -1,71 +1,84 @@
 import Agent from "@/agents/agent";
-import { PredictionRequest, PredictionResponse, LLM } from "@/interfaces/llm";
-import { TextProcessingTool } from "../tools/text-processing";
-import OpenAI from "openai";
-import prompts from "prompts";
+import { LLM } from "@/interfaces/llm";
+import MistralClient from "@mistralai/mistralai";
+import axios from "axios";
 import dotenv from "dotenv";
+import { response } from "express";
+import prompts from "prompts";
 
 // Load environment variables from .env file
 dotenv.config();
 
-interface OpenAIPredictionRequest extends PredictionRequest {
+interface PredictionRequest {
   model: string;
   messages: any[];
-  max_tokens?: number;
-  temperature?: number;
-  topP?: number;
-  tools?: any;
+  tools?: any[];
 }
 
-interface OpenAIPredictionResponse extends PredictionResponse {
-  text: string | OpenAI.Chat.Completions.ChatCompletionMessageToolCall[];
-  model: string;
-  message: OpenAI.Chat.Completions.ChatCompletionMessage;
-  otherMetadata?: any;
+interface PredictionResponse {
+  text: string | any[]; // Can contain either a string (the chat content) or an array (the tool calls)
+  message: any; // The raw message object from the chat response
+  model: string; // The model used for prediction
 }
 
-export default class OpenAIModel implements LLM {
+export default class MistralModel implements LLM {
   private apiKey: string;
-  model: OpenAI;
   name: string;
   messages: any[];
   agent: Agent;
+  tools: any[];
+  baseURL = "https://api.mistral.ai/v1";
+
   constructor(
     agent: Agent,
     opts: { apiKey: string | undefined; systemMessage?: string }
   ) {
     this.agent = agent;
-    this.apiKey = opts.apiKey || process.env.OPENAI_API_KEY || "";
-    this.model = new OpenAI({ apiKey: this.apiKey });
-    this.name = process.env.OPENAI_MODEL || "o1-preview";
-    this.messages = [
-      {
-        role: "user",
-        content: agent.systemMessage || "You are a helpful assistant",
-      },
-    ];
+    this.apiKey = opts.apiKey || process.env.MISTRAL_API_KEY || "";
+    this.name = process.env.MISTRAL_MODEL || "mistral-small-latest";
+    this.messages = [];
+    this.tools = [];
   }
-  async predict(
-    request: OpenAIPredictionRequest
-  ): Promise<OpenAIPredictionResponse> {
+
+  async predict(request: PredictionRequest): Promise<PredictionResponse> {
     try {
-      delete request.prompt;
-      const decision = await this.model.chat.completions.create(request);
-      const toolCalls = decision.choices[0].message.tool_calls || [];
-      const content = decision.choices[0].message.content;
+      const response = await axios.post(
+        `${this.baseURL}/chat/completions`,
+        {
+          model: request.model,
+          messages: request.messages,
+          tools: request.tools,
+
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const chatResponse = response.data;
+      const message = chatResponse.choices[0].message;
+
+      let text =
+        message.tool_calls && message.tool_calls.length > 0
+          ? message.tool_calls
+          : message.content || "";
+
       return {
-        text: toolCalls.length > 0 ? toolCalls : content || "",
-        message: decision.choices[0].message,
-        model: request.model || "gpt-4-1106-preview",
+        text: text,
+        message: message,
+        model: request.model || this.name,
       };
     } catch (error) {
-      console.log(`An error occurred: ${error}`);
+      console.error(`An error occurred: ${error}`);
       throw error; // Propagate the error to the caller
     }
   }
 
   async interact(useDelegate = false): Promise<void> {
-    const decision = await this.agent.think(false);
+    const decision = await this.agent.think();
 
     const toolCalls = Array.isArray(decision.text) ? decision.text : [];
     const content = typeof decision.text === "string" ? decision.text : null;
@@ -74,7 +87,7 @@ export default class OpenAIModel implements LLM {
       if (useDelegate) {
         return content;
       } else {
-        if (["both", "output"].includes(this.agent.options.speech || 'none')) {
+        if (["both", "output"].includes(this.agent.options.speech || "none")) {
           await this.agent.speak(content);
         }
         this.agent.displayMessage(content);
@@ -109,8 +122,8 @@ export default class OpenAIModel implements LLM {
           } else {
             result = await this.agent.act(actionName, args);
           }
-
         } catch (error) {
+          console.log(`An error occurred: ${error}`);
           result = JSON.stringify(error);
           process.exit(1);
         }
@@ -121,7 +134,6 @@ export default class OpenAIModel implements LLM {
           content: result,
         });
       }
-
 
       return await this.interact(useDelegate);
     }

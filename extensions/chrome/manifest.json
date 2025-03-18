@@ -25,12 +25,12 @@
   ],
   "content_scripts": [
     {
-      "matches": ["*://*.openai.com/*"],
+      "matches": ["*://*.openai.com/*", "*://chatgpt.com/*"],
       "js": ["js/openai_content.js"],
       "run_at": "document_end"
     },
     {
-      "matches": ["*://chat.openai.com/*"], 
+      "matches": ["*://chat.openai.com/*", "*://chatgpt.com/*"], 
       "js": ["js/inject.js"],
       "run_at": "document_end"
     }

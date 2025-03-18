@@ -32,13 +32,15 @@ module.exports = async (program: Command) => {
 
     // Register the action handler
     actionCmd.action(async () => {
-      const opts = actionCmd.opts();
+      let opts: any = actionCmd.opts();
       const args = actionCmd.args;
-      const agent = new Agent({
-        actionsPath: "../actions",
-        llm: 'openai',
-        allowCodeExecution: true,
-      })      
+      opts = Agent.loadOptions({...opts, llm: opts.llm || 'openai', allowCodeExecution: true});
+           
+      // We load the use default options from current directory saiku.json or saiku.js
+  // Initialize the agent
+  // @todo: allow the user to specify multiple actions paths
+  const agent = new Agent(opts);
+  agent.options = { ...agent.options, ...opts };
       await actionModule.default(agent, opts, args);
     });
 

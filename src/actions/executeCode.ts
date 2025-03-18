@@ -8,9 +8,14 @@ interface LanguageRunner {
 }
 
 class GeneralRunner implements LanguageRunner {
-  async runCode(command: string): Promise<string> {
+  async runCode(commandString: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      const child = spawn(command);
+      // Splitting the command string into command and arguments
+      const parts = commandString.split(' ');
+      const command = parts[0];
+      const args = parts.slice(1);
+
+      const child = spawn(command, args); // Updated to use command and args
 
       let stderr = "";
       let scriptOutput = "";
@@ -22,7 +27,6 @@ class GeneralRunner implements LanguageRunner {
         data = data.toString();
         scriptOutput += data;
       });
-      
 
       child.on("error", (error) => reject(error));
       child.on("exit", (code) => {
@@ -36,34 +40,35 @@ class GeneralRunner implements LanguageRunner {
   }
 }
 
-class PHPRunner implements LanguageRunner {
-  async runCode(code: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const child = spawn("php", ["-r", code]);
 
-      let stderr = "";
-      let scriptOutput = "";
-      child.stderr.on("data", (data) => {
-        stderr += data.toString(); // collect standard error output
-      });
+// class PHPRunner implements LanguageRunner {
+//   async runCode(code: string): Promise<string> {
+//     return new Promise((resolve, reject) => {
+//       const child = spawn("php", ["-r", code]);
 
-      child.stdout.setEncoding("utf8");
-      child.stdout.on("data", function (data) {
-        data = data.toString();
-        scriptOutput += data;
-      });
+//       let stderr = "";
+//       let scriptOutput = "";
+//       child.stderr.on("data", (data) => {
+//         stderr += data.toString(); // collect standard error output
+//       });
 
-      child.on("error", (error) => reject(error));
-      child.on("exit", (code) => {
-        if (code === 0) {
-          resolve(`Execution complete. ${scriptOutput}`);
-        } else {
-          reject(`Exit with code: ${code}\nError Output:\n${stderr}`); // include standard error output in the rejection
-        }
-      });
-    });
-  }
-}
+//       child.stdout.setEncoding("utf8");
+//       child.stdout.on("data", function (data) {
+//         data = data.toString();
+//         scriptOutput += data;
+//       });
+
+//       child.on("error", (error) => reject(error));
+//       child.on("exit", (code) => {
+//         if (code === 0) {
+//           resolve(`Execution complete. ${scriptOutput}`);
+//         } else {
+//           reject(`Exit with code: ${code}\nError Output:\n${stderr}`); // include standard error output in the rejection
+//         }
+//       });
+//     });
+//   }
+// }
 
 class PythonRunner {
   async runCode(code: string): Promise<string> {
@@ -181,7 +186,7 @@ export default class ExecuteCodeAction implements Action {
         type: "string",
         enum: [
           "python",
-          "php",
+          // "php",
           "shell",
           "bash",
           "javascript",
@@ -212,9 +217,9 @@ constructor(agent: Agent) {
       case "python":
         runner = new PythonRunner();
         break;
-      case "php":
-        runner = new PHPRunner();
-        break;
+      // case "php":
+      //   runner = new PHPRunner();
+      //   break;
       case "shell":
       case "bash":
         runner = new ShellRunner();

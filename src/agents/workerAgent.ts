@@ -11,7 +11,7 @@ import os from "os";
 import { IAgent, AgentOptions } from "@/interfaces/agent";
 dotenv.config();
 
-class Agent implements IAgent {
+class WorkerAgent implements IAgent {
   name?: string;
   // @todo: use llm instead and allow the user to specify the model
   model = new OpenAI({
@@ -318,4 +318,4 @@ class Agent implements IAgent {
   }
 }
 
-export default Agent;
+export default WorkerAgent;

@@ -1,5 +1,5 @@
 (function() {
-    const targetUrl = 'https://chat.openai.com/backend-api/conversation';
+    const targetUrl = 'https://chatgpt.com/backend-api/conversation';
     const originalFetch = window.fetch;
   
     function handleStream(reader, requestUrl) {

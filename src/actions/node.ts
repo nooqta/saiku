@@ -138,7 +138,7 @@ Ensure to send the correctly formatted message for desired actions.
     let message = `_You are now interacting with the node agent. Type "quit" to exit._`;
     this.worker.displayMessage(message);
     this.worker.messages.push({
-      role: "system",
+      role: "user",
       content: this.worker.systemMessage,
     });
 

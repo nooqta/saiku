@@ -5,37 +5,49 @@ import { join } from "path";
 import { marked } from "marked";
 import TerminalRenderer from "marked-terminal";
 import OpenAIModel from "../llms/openai";
-import dotenv from 'dotenv'; 
-import os from 'os';
+import dotenv from "dotenv";
+import os from "os";
 import { AgentOptions, IAgent } from "../interfaces/agent";
 import { LLM } from "@/interfaces/llm";
 import { GoogleVertexAI } from "../llms/googleVertexAI";
 import Ollama from "../llms/ollama";
 import { HuggingFace } from "../llms/huggingFace";
 import { SocketAdapterModel } from "../llms/adapters/socketAdapter";
+import MistralModel from "../llms/mistral";
+import ClaudeModel from "../llms/claude";
 
 dotenv.config();
 
-
 class Agent implements IAgent {
-  static loadDefaultOptions(opts: any = {}) {
+  static loadOptions(opts: any = {}) {
     let defaultOptions = { actionsPath: "../actions", llm: "openai" };
+    defaultOptions = { ...defaultOptions, ...opts };
     // we check if we have a saiku.jon|js file in the current working directory
-    if (fs.existsSync(path.join(process.cwd(), 'saiku.json'))) {
+    if (fs.existsSync(path.join(process.cwd(), "saiku.json"))) {
       // order of precedence: defaultOptions < saiku.json < opts
-      const saikuFile = fs.readFileSync(path.join(process.cwd(), 'saiku.json'), 'utf-8');
+      const saikuFile = fs.readFileSync(
+        path.join(process.cwd(), "saiku.json"),
+        "utf-8"
+      );
       const saiku = JSON.parse(saikuFile);
       if (saiku.defaultOptions) {
-        defaultOptions = {...defaultOptions ,...saiku.defaultOptions, ...opts};
+        defaultOptions = {
+          ...defaultOptions,
+          ...saiku.defaultOptions,
+          ...opts,
+        };
       }
-    } 
+    }
     // we check if we have a saiku.js file in the current working directory. If so we merge with defaultOptions
-    if (fs.existsSync(path.join(process.cwd(), 'saiku.js'))) {
-      const saikuFile = require(path.join(process.cwd(), 'saiku.js'));
+    if (fs.existsSync(path.join(process.cwd(), "saiku.js"))) {
+      const saikuFile = require(path.join(process.cwd(), "saiku.js"));
       if (saikuFile.defaultOptions) {
         // order of precedence: defaultOptions < saiku.js < opts
-        defaultOptions = {...defaultOptions ,...saikuFile.defaultOptions, ...opts};
-
+        defaultOptions = {
+          ...defaultOptions,
+          ...saikuFile.defaultOptions,
+          ...opts,
+        };
       }
     }
     return defaultOptions;
@@ -44,12 +56,13 @@ class Agent implements IAgent {
   model!: LLM;
   score = 100;
   messages: any[] = [];
-  systemMessage = 'You are a helpful assistant';
+  systemMessage = "You are a helpful assistant";
   functions: { [key: string]: Action } = {};
   actions: { [key: string]: any } = {};
+  actionPaths: string[] = ['../actions'];
   memory: any = {
-    lastAction: null,  // Name of the last action
-    lastActionStatus: null,  // 'success' or 'failure'
+    lastAction: null, // Name of the last action
+    lastActionStatus: null, // 'success' or 'failure'
   }; // A basic representation of agent's memory. Can be replaced with a more sophisticated data structure.
   objectives: any[] = []; // Agent's objectives.
   options: AgentOptions = { actionsPath: "../actions", llm: "openai" };
@@ -58,57 +71,65 @@ class Agent implements IAgent {
   services: any = {};
 
   constructor(options: AgentOptions) {
-    this.options = {...this.options, ...options};
+    this.actionPaths = [...this.actionPaths, options.actionsPath || "../actions"]
+    this.options = { ...this.options, ...options };
     if (options.systemMessage) {
       this.systemMessage = options.systemMessage;
     }
     this.init();
     // Load actions from the specified actionsPath.
     // this.loadFunctions(options.actionsPath);
-    this.loadAllFunctions(options.actionsPath || "../actions");
+    this.loadAllFunctions();
     this.actions = this.getFunctionsDefinitions();
   }
   init() {
-    const {llm} = this.options;
+    const { llm } = this.options;
     switch (llm) {
-      case 'openai':
-        this.model = new OpenAIModel(this,{
+      case "openai":
+        this.model = new OpenAIModel(this, {
           apiKey: process.env.OPENAI_API_KEY,
-        })
+        });
         break;
-      case 'vertexai':
-        this.model = new GoogleVertexAI(this,{
+      case "vertexai":
+        this.model = new GoogleVertexAI(this, {
           projectId: process.env.GOOGLE_PROJECT_ID,
           apiEndpoint: process.env.GOOGLE_API_ENDPOINT,
           modelId: process.env.GOOGLE_MODEL_ID,
         });
         break;
-      case 'ollama':
-        this.model = new Ollama(this,{
+      case "ollama":
+        this.model = new Ollama(this, {
           baseURL: process.env.OLLAMA_BASE_URL,
           model: process.env.OLLAMA_MODEL,
         });
         break;
-      case 'huggingface':
-        this.model = new HuggingFace(this,{
+      case "huggingface":
+        this.model = new HuggingFace(this, {
           apiKey: process.env.HUGGINGFACE_API_KEY,
           model: process.env.HUGGINGFACE_MODEL,
         });
         break;
-      case 'socket':
+      case "socket":
         this.model = new SocketAdapterModel(this, this.options);
+        break;
+      case "mistral":
+        this.model = new MistralModel(this, {
+          apiKey: process.env.MISTRAL_API_KEY,
+        });
+        break;
+      case "claude":
+        this.model = new ClaudeModel(this, {
+          apiKey: process.env.ANTHROPIC_API_KEY,
+        });
         break;
       // @todo: add support for other llms
       default:
-          this.model = new OpenAIModel(this,{
+        this.model = new OpenAIModel(this, {
           apiKey: process.env.OPENAI_API_KEY,
-          
-        })
+        });
         break;
-    } 
+    }
   }
-  
-  
 
   async listen(): Promise<string> {
     return await this.functions["speech_to_text"].run({});
@@ -117,7 +138,7 @@ class Agent implements IAgent {
   async think(useFunctionCalls = true): Promise<any> {
     try {
       const systemMessage = {
-        role: "system",
+        role: "user",
         content: `${this.systemMessage}\n${JSON.stringify(await this.sense())}`,
       };
       const messages = [systemMessage, ...this.messages];
@@ -125,7 +146,9 @@ class Agent implements IAgent {
       const functions = this.actions;
       let decision = await this.model.predict({
         // @ts-ignore
-          prompt: this.currentMessages.findLast((message:any) => message.role === 'user')?.content,
+        prompt: this.currentMessages.findLast(
+          (message: any) => message.role === "user"
+        )?.content,
         messages:
           this.currentMessages.length > 10
             ? [
@@ -134,51 +157,56 @@ class Agent implements IAgent {
               ]
             : this.currentMessages,
         model: this.model.name,
-        ...(useFunctionCalls ? { tools: functions,  tool_choice: "auto" } : {})
-  
+        ...(useFunctionCalls ? { tools: functions, tool_choice: "auto" } : {}),
       });
-  
+
       return decision;
-      
     } catch (error) {
       // @ts-ignore
-      console.log(`An error occurred: ${error.message}`)
+      console.log(`An error occurred: ${error.message}`);
+      process.exit(1);
       // @ts-ignore
       return error.message;
     }
   }
 
-  async speak(text: string, useLocal = false): Promise<void> {
-
-    if(!useLocal) {
-    // We request openai to suggest a text that can be spoken
-    const response = await this.model.predict({
-      messages: [
-        {
-          role: "system",
-          content: `
-          Generate a Siri-friendly speech from the following text, capturing all key points while omitting or rephrasing unsuitable content.          `,
-        },
-        {
-          role: "user",
-          content: text,
-        }
-      ],
-      model: process.env.OPENAI_MODEL || "gpt-4-1106-preview",
-      max_tokens: 64,
-      temperature: 0.8,
-    }); // Add 'as any' to bypass the type checking error
-    text = response.text || text;
+  async say(text: string): Promise<void> {
+    await this.speak(text, true);
   }
-    if (os.platform() === 'darwin') {
+
+  async speak(text: string, useLocal = false): Promise<void> {
+    if (!useLocal) {
+      // We request openai to suggest a text that can be spoken
+      const response = await this.model.predict({
+        messages: [
+          {
+            role: "system",
+            content: `
+          Generate a Siri-friendly speech from the following text, capturing all key points while omitting or rephrasing unsuitable content.          `,
+          },
+          {
+            role: "user",
+            content: text,
+          },
+        ],
+        model: process.env.OPENAI_MODEL || "gpt-4-1106-preview",
+        max_tokens: 64,
+        temperature: 0.8,
+      }); // Add 'as any' to bypass the type checking error
+      text = response.text || text;
+    }
+    if (os.platform() === "darwin") {
       // we use execute_code action and Siri to speak the text
-      await this.functions["execute_code"].run({ code: `say "${text}"`, language: 'applescript' });
+      await this.functions["execute_code"].run({
+        code: `say "${text}"`,
+        language: "applescript",
+      });
       // @todo: add support for other platforms
     } else {
-    const filename =  await this.functions["text_to_speech"].run({ text });
-    // play audio file
-    const player = require("play-sound")(({}));
-    await player.play(filename)
+      const filename = await this.functions["text_to_speech"].run({ text });
+      // play audio file
+      const player = require("play-sound")({});
+      await player.play(filename);
     }
   }
 
@@ -188,24 +216,32 @@ class Agent implements IAgent {
     });
     console.log(marked(message));
   }
-  private loadAllFunctions(actionsPath: string) {
-    const actionFiles = fs.readdirSync(
-      join(path.resolve(__dirname, actionsPath))
-    );
-    actionFiles.forEach((file) => {
-      const actionClass = require(path.join(actionsPath, file)).default;
-      const actionInstance: Action = new actionClass(this);
-      this.functions[actionInstance.name] = actionInstance;
+  private loadAllFunctions() {
+    this.actionPaths.forEach(actionsPath => {
+        const actionFiles = fs.readdirSync(
+            join(path.resolve(__dirname, actionsPath))
+        );
+          // we filter out map files
+        actionFiles.filter(_file => !_file.endsWith('.map') && !_file.endsWith('.d.ts') && _file != 'index.js')
+        .forEach((file) => {
+            const actionClass = require(path.join(actionsPath, file)).default;
+            const actionInstance: Action = new actionClass(this);
+            this.functions[actionInstance.name] = actionInstance;
+        });
     });
-  }
+}
+
   private loadFunctions(actionsPath: string) {
     let actionFiles = fs.readdirSync(
       join(path.resolve(__dirname, actionsPath))
     );
-    const activatedActions = ['execute_code', 'chat', 'websocket_server'];
+    const activatedActions = ["execute_code", "chat", "websocket_server"];
     // check if we have a .saiku file
-    if (fs.existsSync(path.join(actionsPath, 'saiku'))) {
-      const saikuFile = fs.readFileSync(path.join(actionsPath, 'saiku'), 'utf-8');
+    if (fs.existsSync(path.join(actionsPath, "saiku"))) {
+      const saikuFile = fs.readFileSync(
+        path.join(actionsPath, "saiku"),
+        "utf-8"
+      );
       const saiku = JSON.parse(saikuFile);
       if (saiku.activatedActions) {
         activatedActions.push(...saiku.activatedActions);
@@ -217,7 +253,7 @@ class Agent implements IAgent {
       const actionInstance: Action = new actionClass(this);
       return activatedActions.includes(actionInstance.name);
     });
-    
+
     actionFiles.forEach((file) => {
       const actionClass = require(path.join(actionsPath, file)).default;
       const actionInstance: Action = new actionClass(this);
@@ -226,15 +262,18 @@ class Agent implements IAgent {
   }
   public getAllFunctions() {
     const actionFiles = fs.readdirSync(
-      join(path.resolve(__dirname, this.options.actionsPath || '../actions'))
+      join(path.resolve(__dirname, this.options.actionsPath || "../actions"))
     );
-    const functions : Action[]=[] ;
+    const functions: Action[] = [];
     actionFiles.forEach((file) => {
-      const actionClass = require(path.join(this.options.actionsPath || '../actions', file)).default;
+      const actionClass = require(path.join(
+        this.options.actionsPath || "../actions",
+        file
+      )).default;
       const actionInstance: Action = new actionClass(this);
       functions.push(actionInstance);
     });
-    return functions
+    return functions;
   }
 
   async sense(): Promise<any> {
@@ -242,7 +281,7 @@ class Agent implements IAgent {
       // @todo: provide more context information
       resolve({
         agent: {
-          name: 'Saiku'
+          name: "Saiku",
         },
         os: process.platform,
         arch: process.arch,
@@ -265,49 +304,50 @@ class Agent implements IAgent {
         },
         api_services: {
           weather: process.env.WEATHER_API_KEY,
-          gitlab: {
-            version: process.env.GITLAB_VERSION,
-            username: process.env.GITLAB_USERNAME,
-            api_version: process.env.GITLAB_API_VERSION,
-          }
+          gitlab: (() => {
+            const gitlab: any = {};
+            for (const key in process.env) {
+              if (key.startsWith("GITLAB_")) {
+                gitlab[key.replace("GITLAB_", "")] = process.env[key];
+              }
+            }
+            return gitlab;
+          })(),
         },
         ...this.memory,
       });
     });
   }
 
-
   async act(actionName: string, args: any): Promise<string> {
-    try { 
-    const action = this.functions[actionName];
-    this.displayMessage(
-      `_Executing action **${actionName}: ${action.description}**_`
-    );
-    if (action) {
-      try {
-        // @ts-ignore
-        const output = await action.run(args);
-        await this.updateMemory({
-          lastAction: actionName,
-          lastActionStatus: "success",
-        });
-        return output;
-      } catch (error) {
-        await this.updateMemory( {
-          lastAction: actionName,
-          lastActionStatus: "failure",
-        });
-        return JSON.stringify(error);
-
+    try {
+      const action = this.functions[actionName];
+      this.displayMessage(
+        `_Executing action **${actionName}: ${action.description}**_`
+      );
+      if (action) {
+        try {
+          // @ts-ignore
+          const output = await action.run(args);
+          await this.updateMemory({
+            lastAction: actionName,
+            lastActionStatus: "success",
+          });
+          return output;
+        } catch (error) {
+          await this.updateMemory({
+            lastAction: actionName,
+            lastActionStatus: "failure",
+          });
+          return JSON.stringify(error);
+        }
+      } else {
+        this.displayMessage(`No action found with name: **${actionName}**`);
+        return "Action not found";
       }
-
-    } else {
-      this.displayMessage(`No action found with name: **${actionName}**`);
-      return "Action not found";
-    }
-  } catch (error) {
+    } catch (error) {
       return JSON.stringify(error);
-  }
+    }
   }
 
   evaluatePerformance(): number {
@@ -343,10 +383,10 @@ class Agent implements IAgent {
   updateMemory(args: any): any {
     this.memory = {
       ...this.memory,
-      ...args
-    }
+      ...args,
+    };
   }
-  async interact(delegate?: boolean): Promise<void|string> {
+  async interact(delegate?: boolean): Promise<void | string> {
     return await this.model.interact(delegate);
   }
 
@@ -365,9 +405,9 @@ class Agent implements IAgent {
         parameters: {
           type: "object",
           properties: action.parameters.reduce((acc: any, arg: any) => {
-            acc[arg.name] = { 
-              type: arg.type, 
-              description: arg.description || '' // Include description if available
+            acc[arg.name] = {
+              type: arg.type,
+              description: arg.description || "", // Include description if available
             };
             if (arg.type === "array" && arg.items) {
               // Include items if the type is array and items is defined
@@ -381,8 +421,7 @@ class Agent implements IAgent {
         },
       },
     }));
-}
-
+  }
 }
 
 export default Agent;

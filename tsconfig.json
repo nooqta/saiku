@@ -9,6 +9,9 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "moduleResolution": "node",
+    "declaration": true, // This ensures type declaration files are generated
+    "declarationMap": true, // Optional, helps with debugging
+    "sourceMap": true, // Optional, helps with debugging
     "allowJs": true,
     "baseUrl": "./",
     "paths": {

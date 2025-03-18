@@ -17,14 +17,15 @@ export default class OpenaiVisionAction implements Action {
     name = 'openai_vision';
     description = 'Analyze a video using OpenAI Vision.';
     parameters = [
-        { name: 'source', type: 'string', required: true, description: 'Local path or URL of the video.' }
+        { name: 'source', type: 'string', required: true, description: 'Local path or URL of the video.' },
+        { name: 'prompt', type: 'string', required: true, description: 'Prompt to use for the OpenAI Vision API.' },
     ];
 
     constructor(agent: Agent) {
         this.agent = agent;
     }
 
-    async run(args: { source: string }): Promise<any> {
+    async run(args: { source: string, prompt: string }): Promise<any> {
         const isUrl = /^https?:\/\//.test(args.source);
         let filePath = args.source;
 
@@ -39,7 +40,7 @@ export default class OpenaiVisionAction implements Action {
         await this.extractFrames(filePath, framesPath);
 
         const base64Frames = await this.encodeFramesToBase64(framesPath);
-        const videoDescription = await this.analyzeVideo(base64Frames);
+        const videoDescription = await this.analyzeVideo(base64Frames, args.prompt);
 
         return videoDescription;
     }
@@ -113,7 +114,7 @@ async downloadVideo(url: string) {
         }));
     }
 
-    async analyzeVideo(base64Frames: any[]) {
+    async analyzeVideo(base64Frames: any[], prompt ="These are frames from a video. Generate summary about what the video is about.") {
         const openai = new OpenAI();
 
         // Prepare the request for OpenAI's Vision API
@@ -124,7 +125,7 @@ async downloadVideo(url: string) {
                 {
                     role: "user",
                     content: [
-                        { type: "text", text: "These are frames from a video. Generate summary about what the video is about." },
+                        { type: "text", text: prompt },
                         ...base64Frames.filter((_: any, index: number) => index % 10 === 0).map((imageBase64: any) => ({
                             type: "image_url",
                             image_url: `data:image/jpeg;base64,${imageBase64}`

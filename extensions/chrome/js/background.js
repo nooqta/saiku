@@ -68,7 +68,7 @@ function handleServerMessage(message) {
     // If the 'useOpenAI' flag is true in the message
     if (message.useOpenAI) {
       // Search for the first tab with the URL 'chat.openai.com'
-      chrome.tabs.query({ url: "*://chat.openai.com/*" }, function (tabs) {
+      chrome.tabs.query({ url: "*://chatgpt.com/*" }, function (tabs) {
         let targetTab = tabs[0]; // Assuming you want to use the first tab that matches
         if (targetTab && targetTab.id) {
           // After injecting the openai_content.js into the target tab
@@ -86,7 +86,7 @@ function handleServerMessage(message) {
                 return;
               }
               console.log("Executed openai_content.js on:", targetTab.url);
-
+              console.log(message)
               // Send a message to the tab to set the user's input and click send
               chrome.tabs.sendMessage(
                 targetTab.id,

@@ -2,7 +2,7 @@ import { Command } from "commander";
 import Agent from "../../../agents/agent";
 
 export default async function run(agent: Agent, _opts: any, _args: any) {
-  let { name, args } = _opts;
+  let [ name, args ] = _args;
   let opts: any = {};
   _opts.args = _opts.args?.split("|");
   if (Array.isArray(_opts.args)) {

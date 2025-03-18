@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 "use strict";
-
+require('source-map-support').install();
+require('module-alias/register');
 const { Command } = require("commander");
 const program = new Command();
 const fs = require("fs");
