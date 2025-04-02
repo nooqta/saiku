@@ -6,6 +6,7 @@ Looking for the Python version? Check out [Saiku.py](https://github.com/anis-mar
 ## Table of Contents
 
 - [About](#about)
+  - [Core Architecture: Model Context Protocol (MCP)](#core-architecture-model-context-protocol-mcp)
   - [Why Saiku?](#why-saiku)
   - [What is PEAS?](#what-is-peas)
 - [Features](#features)
@@ -54,9 +55,19 @@ Looking for the Python version? Check out [Saiku.py](https://github.com/anis-mar
 
 This project aims to create a robust, intelligent AI Agent capable of automating various tasks. Our agent is designed following the PEAS (Performance measure, Environment, Actuators, Sensors) framework to ensure it's robust, scalable, and efficient.
 
+### Core Architecture: Model Context Protocol (MCP)
+
+Saiku leverages the **Model Context Protocol (MCP)**, a cutting-edge standard for enabling AI models to interact with external tools and resources securely and efficiently. MCP is becoming increasingly vital in the AI landscape, allowing agents like Saiku to:
+
+*   **Extend Capabilities:** Seamlessly integrate with various tools (filesystem access, web browsing, API interactions, etc.) provided by MCP servers.
+*   **Access Real-time Data:** Utilize dynamic information from connected resources.
+*   **Perform Complex Actions:** Go beyond text generation to execute commands, manipulate files, and interact with external systems.
+
+By building on MCP, Saiku ensures a flexible, extensible, and future-proof architecture for AI agent development. Learn more about MCP [here](./documentation/MCP.md).
+
 ### Why Saiku?
 
-"Saiku" (細工) in Japanese refers to detailed or delicate work, symbolizing the intricate and intelligent workings of our AI agent. 
+"Saiku" (細工) in Japanese refers to detailed or delicate work, symbolizing the intricate and intelligent workings of our AI agent.
 
 - **S**: Smart
 - **A**: Artificial
@@ -80,6 +91,7 @@ PEAS stands for Performance measure, Environment, Actuators, and Sensors. It's a
 - Modular Design
 - OpenAI GPT-4 Integration
 - Extensible and Customizable
+- **VS Code Extension:** Interact with Saiku using voice commands directly within your editor via the [Cline Voice Assistant extension](./extensions/cline-voice-assistant/).
 
 ## Prerequisites
 
@@ -90,17 +102,17 @@ PEAS stands for Performance measure, Environment, Actuators, and Sensors. It's a
 #### Google Vision
 - Google Cloud SDK installed and configured with a project:
   - Install [Google Cloud SDK](https://cloud.google.com/sdk/docs/install)
-  - Authenticate with Google Cloud: 
-    ```bash
+  - Authenticate with Google Cloud:
+    \`\`\`bash
     gcloud auth login
-    ```
+    \`\`\`
   - Set your project ID:
-    ```bash
+    \`\`\`bash
     gcloud config set project <your-project-id>
-    ```
+    \`\`\`
 - Enable the Google Vision API for your project:
   - Visit the [Google Cloud Console](https://console.cloud.google.com/)
-  - Navigate to the 'APIs & Services > Dashboard' 
+  - Navigate to the 'APIs & Services > Dashboard'
   - Click on '+ ENABLE APIS AND SERVICES', search for 'Vision API' and enable it.
 #### Google Calendar, docs and sheets
  - Download the service account JSON file from your GCP project page
@@ -111,40 +123,40 @@ Saiku is a versatile tool that enhances projects with advanced functionalities. 
 
 ### Installation
 
-- **Step**: Run `npm install saiku` in your project directory to add Saiku as a dependency.
+- **Step**: Run \`npm install saiku\` in your project directory to add Saiku as a dependency.
 
 ### Usage
 
 #### 1. Importing Saiku
 
-- **Code**: 
-  ```javascript
+- **Code**:
+  \`\`\`javascript
   import Agent from 'saiku';
-  ```
+  \`\`\`
 
 #### 2. Initializing Saiku Agent
 
-- **Example**: 
-  ```javascript
+- **Example**:
+  \`\`\`javascript
   async function main(opts) {
     const agent = new Agent(opts); // Initialize the agent
     // Additional initialization code
   }
-  ```
+  \`\`\`
 
 #### 3. Configuring Saiku
 
 - **AgentOptions**:
-  - **actionsPath** (`string` | `optional`): Path to custom action scripts.
-  - **systemMessage** (`string` | `optional`): Default system message or instructions.
-  - **allowCodeExecution** (`boolean` | `optional`): Flag to enable/disable code execution.
-  - **interactive** (`boolean` | `string` | `optional`): Interactive mode setting.
-  - **speech** (`'input' | 'output' | 'both' | 'none'`): Configures speech functionality.
-  - **llm** (`'openai' | 'vertexai' | 'ollama' | 'huggingface'`): Specifies the language learning model. Default is `'openai'`.
-  - **[key: string]: any** (`optional`): Allows additional custom properties for unique project requirements.
+  - **actionsPath** (\`string\` | \`optional\`): Path to custom action scripts.
+  - **systemMessage** (\`string\` | \`optional\`): Default system message or instructions.
+  - **allowCodeExecution** (\`boolean\` | \`optional\`): Flag to enable/disable code execution.
+  - **interactive** (\`boolean\` | \`string\` | \`optional\`): Interactive mode setting.
+  - **speech** (\`'input' | 'output' | 'both' | 'none'\`): Configures speech functionality.
+  - **llm** (\`'openai' | 'vertexai' | 'ollama' | 'huggingface'\`): Specifies the language learning model. Default is \`'openai'\`.
+  - **[key: string]: any** (\`optional\`): Allows additional custom properties for unique project requirements.
 
 - **Example Configuration**:
-  ```javascript
+  \`\`\`javascript
   let opts = {
     actionsPath: "../actions",
     systemMessage: "Welcome to Saiku",
@@ -154,7 +166,7 @@ Saiku is a versatile tool that enhances projects with advanced functionalities. 
     llm: "openai",
     // Custom options
   };
-  ```
+  \`\`\`
 
 #### 4. Interacting with Saiku
 
@@ -165,63 +177,63 @@ Saiku is a versatile tool that enhances projects with advanced functionalities. 
   - **Speaking Output**: For speech-enabled applications, configure spoken output.
 
 - **Example Interaction**:
-  ```javascript
+  \`\`\`javascript
   do {
     let userQuery = await getUserInput(); // Get user input
     agent.messages.push({ role: "user", content: userQuery });
 
     await agent.interact(); // Process and perform actions
-    
+
     // Additional code
   } while (userQuery.toLowerCase() !== "quit");
-  ```
+  \`\`\`
 
 ## 2. Using the project itself
 ### Usage
 - **Clone the Repository**:
-  ```bash
+  \`\`\`bash
   git clone https://github.com/nooqta/saiku.git
-  ```
+  \`\`\`
 
 - **Navigate to Project Folder**:
-  ```bash
+  \`\`\`bash
   cd saiku
-  ```
+  \`\`\`
 
 - **Install Dependencies**:
-  ```bash
+  \`\`\`bash
   npm install
-  ```
+  \`\`\`
 
 
 - **Run the Project Locally**:
 
 Before starting Saiku locally, build the project using the following command:
 
-```
+\`\`\`
 npm run build
-```
+\`\`\`
 
 To start the agent:
 
-```
+\`\`\`
 npm start
-```
+\`\`\`
 
 For automated building during development, use:
 
-```
+\`\`\`
 npm run watch
-```
+\`\`\`
 
 This will automatically build the project whenever files are changed, helping streamline the development process.
 ## 3. Global Installation (Not Recommended Yet)
 
 Saiku is available globally but is still in early development. Local installation is recommended.
 
-```bash
+\`\`\`bash
 npm install -g saiku
-```
+\`\`\`
 
 ### Documentation and API
 
@@ -233,9 +245,9 @@ This guide is designed to provide clarity and ease of use for integrating Saiku 
 
 Although Saiku is available as an npm package, we are still in the early stages of development, and drastic changes to the architecture will occur. We don't recommend installing it globally yet. However, if you still wish to do so:
 
-```
+\`\`\`
 npm install -g saiku
-```
+\`\`\`
 ## Demo
 
 https://github.com/nooqta/saiku/assets/3036133/87752826-fc6a-4c16-91a7-917b0f79427a
@@ -248,13 +260,13 @@ https://github.com/nooqta/saiku/assets/3036133/87752826-fc6a-4c16-91a7-917b0f794
 
 Before running Saiku, configure the necessary environment variables. Copy the example environment file and then fill in the details.
 
-```
+\`\`\`
 cp .env.example .env
-```
+\`\`\`
 
-Edit the `.env` file to include your specific information:
+Edit the \`.env\` file to include your specific information:
 
-```
+\`\`\`
 # OpenAI
 OPENAI_API_KEY=
 OPENAI_MODEL=gpt-3.5-turbo
@@ -290,13 +302,13 @@ GITLAB_PERSONAL_ACCESS_TOKEN=
 GITLAB_USERNAME=
 GITLAB_VERSION=
 GITLAB_API_VERSION=
-```
+\`\`\`
 
 ### Available Commands
 
 Use Saiku with various options to tailor its operation to your needs:
 
-```
+\`\`\`
 AI agent to help automate your tasks
 
 Options:
@@ -305,7 +317,7 @@ Options:
   -s, --speech <type>          Receive voice input from the user and/or output responses as speech.
                                Possible values: input, output, both, none. Default is "none".
   -role, --systemMessage       The model system role message.
-  -m, --llm <model>            Specify the language model to use. 
+  -m, --llm <model>            Specify the language model to use.
                                Possible values: openai, vertexai, ollama, and huggingface. Default is "openai".
   -h, --help                   Display help for command.
 
@@ -313,51 +325,51 @@ Commands:
   action [options]             Manage actions: create an new action using AI, list available actions and activate an action.
   autopilot [options]          AI agent to help automate your tasks on autopilot mode (in progress).
   serve                        Chat with the Saiku agent in the browser.
-```
+\`\`\`
 
 #### Examples:
 
 To allow code execution without prompting:
 
-```
+\`\`\`
 saiku -exec
-```
+\`\`\`
 or
-```
+\`\`\`
 npm start -- -exec
-```
+\`\`\`
 
 To enable voice input and output:
-```
+\`\`\`
 saiku -s both
-```
+\`\`\`
 or
-```
+\`\`\`
 npm start -- --speech both
-```
+\`\`\`
 
 To specify a language model:
-```
+\`\`\`
 saiku -m huggingface
-```
+\`\`\`
 or
-```
+\`\`\`
 npm start -- --llm huggingface
-```
+\`\`\`
 
 To chat with Saiku in the browser
-```
+\`\`\`
 saiku serve
 # or
 npm start -- serve
-```
+\`\`\`
 
 To create a new action
-```
+\`\`\`
 saiku action create
 # or
 npm start -- action create
-```
+\`\`\`
 
 ## Use Cases
 
@@ -433,9 +445,9 @@ Description: Saiku will utilize the file_action function to write the provided c
 We welcome contributions from the community. If you'd like to contribute, please follow these steps:
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/YourFeature`)
-3. Commit your changes (`git commit -m 'Add some feature'`)
-4. Push to the branch (`git commit push origin feature/YourFeature`)
+2. Create your feature branch (\`git checkout -b feature/YourFeature\`)
+3. Commit your changes (\`git commit -m 'Add some feature'\`)
+4. Push to the branch (\`git commit push origin feature/YourFeature\`)
 5. Create a new Pull Request
 
 [Contributing Guidelines](CONTRIBUTING.md).
