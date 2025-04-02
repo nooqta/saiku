@@ -11,9 +11,7 @@ Looking for the Python version? Check out [Saiku.py](https://github.com/anis-mar
   - [What is PEAS?](#what-is-peas)
 - [Features](#features)
 - [Prerequisites](#prerequisites)
-  - [Optional requirements](#optional-requirements)
-    - [Google Vision](#google-vision)
-    - [Google Calendar, Docs and Sheets](#google-calendar-docs-and-sheets)
+  - [Optional Requirements](#optional-requirements)
 - [1. Using Saiku in Your Own Projects](#1-using-saiku-in-your-own-projects)
   - [Installation](#installation)
   - [Usage](#usage)
@@ -32,17 +30,8 @@ Looking for the Python version? Check out [Saiku.py](https://github.com/anis-mar
 - [Setting Up Environment Variables](#setting-up-environment-variables)
 - [Available Commands](#available-commands)
   - [Examples](#examples)
-- [Use Cases](#use-cases)
-  - [Use Case 1: Transcribe Audio to Text](#use-case-1-transcribe-audio-to-text)
-  - [Use Case 2: Extract Text from an Image](#use-case-2-extract-text-from-an-image)
-  - [Use Case 3: Summarize a Long Article](#use-case-3-summarize-a-long-article)
-  - [Use Case 4: HTML to PDF Conversion](#use-case-4-html-to-pdf-conversion)
-  - [Use Case 5: Take a Screenshot of a Webpage](#use-case-5-take-a-screenshot-of-a-webpage)
-  - [Use Case 6: Text to Speech](#use-case-6-text-to-speech)
-  - [Use Case 7: Create a Simple Chart](#use-case-7-create-a-simple-chart)
-  - [Use Case 8: Parse PDF Content](#use-case-8-parse-pdf-content)
-  - [Use Case 9: Perform a Database Query](#use-case-9-perform-a-database-query)
-  - [Use Case 10: File Actions (Read/Write)](#use-case-10-file-actions-readwrite)
+- [Use Cases (via MCP & Extensions)](#use-cases-via-mcp--extensions)
+- [Workflows](#workflows)
 - [Future Features](#future-features)
 - [Contributing](#contributing)
 - [Support Saiku](#support-saiku)
@@ -59,9 +48,9 @@ This project aims to create a robust, intelligent AI Agent capable of automating
 
 Saiku leverages the **Model Context Protocol (MCP)**, a cutting-edge standard for enabling AI models to interact with external tools and resources securely and efficiently. MCP is becoming increasingly vital in the AI landscape, allowing agents like Saiku to:
 
-*   **Extend Capabilities:** Seamlessly integrate with various tools (filesystem access, web browsing, API interactions, etc.) provided by MCP servers.
-*   **Access Real-time Data:** Utilize dynamic information from connected resources.
-*   **Perform Complex Actions:** Go beyond text generation to execute commands, manipulate files, and interact with external systems.
+*   **Extend Capabilities:** Seamlessly integrate with various tools (filesystem access, web browsing, API interactions, code execution, etc.) provided by connected MCP servers.
+*   **Access Real-time Data:** Utilize dynamic information from connected resources (e.g., databases, APIs, system information).
+*   **Perform Complex Actions:** Go beyond text generation to execute commands, manipulate files, interact with external systems, and orchestrate multi-step processes.
 
 By building on MCP, Saiku ensures a flexible, extensible, and future-proof architecture for AI agent development. Learn more about MCP [here](./documentation/MCP.md).
 
@@ -81,49 +70,36 @@ We chose a Japanese name to symbolize precision, innovation, and advanced techno
 
 PEAS stands for Performance measure, Environment, Actuators, and Sensors. It's a framework used to describe the various components of an intelligent agent:
 
-- **Performance Measure**: How well is the agent doing in its environment
-- **Environment**: Where the agent operates
-- **Actuators**: What actions the agent can take
-- **Sensors**: How the agent perceives its environment
+- **Performance Measure**: How well is the agent doing in its environment? (e.g., task completion rate, efficiency)
+- **Environment**: Where the agent operates (e.g., user's local machine, specific software, web)
+- **Actuators**: What actions the agent can take via MCP tools (e.g., writing files, executing commands, calling APIs)
+- **Sensors**: How the agent perceives its environment via MCP resources and tool outputs (e.g., reading files, getting system status, receiving API responses)
 
 ## Features
 
-- Modular Design
-- OpenAI GPT-4 Integration
-- Extensible and Customizable
+- **MCP-Powered:** Core architecture based on the Model Context Protocol for secure and extensible tool/resource integration.
+- **Multi-LLM Support:** Integrates with various Large Language Models (OpenAI, Vertex AI, Ollama, Hugging Face, Mistral, Anthropic).
+- **Workflow Engine:** Define and run complex, multi-step automations using JSON-based workflows.
+- **Extensible:** Easily add new capabilities by connecting new MCP servers.
 - **VS Code Extension:** Interact with Saiku using voice commands directly within your editor via the [Cline Voice Assistant extension](./extensions/cline-voice-assistant/).
+- **Web Interface:** Chat with Saiku through a browser interface.
 
 ## Prerequisites
 
-- Node.js installed
-- OpenAI API key
+- **Node.js:** Version 18 or higher recommended.
+- **LLM API Key:** An API key for at least one supported Large Language Model (e.g., OpenAI).
 
-### Optional requirements
-#### Google Vision
-- Google Cloud SDK installed and configured with a project:
-  - Install [Google Cloud SDK](https://cloud.google.com/sdk/docs/install)
-  - Authenticate with Google Cloud:
-    \`\`\`bash
-    gcloud auth login
-    \`\`\`
-  - Set your project ID:
-    \`\`\`bash
-    gcloud config set project <your-project-id>
-    \`\`\`
-- Enable the Google Vision API for your project:
-  - Visit the [Google Cloud Console](https://console.cloud.google.com/)
-  - Navigate to the 'APIs & Services > Dashboard'
-  - Click on '+ ENABLE APIS AND SERVICES', search for 'Vision API' and enable it.
-#### Google Calendar, docs and sheets
- - Download the service account JSON file from your GCP project page
+### Optional Requirements
 
+- **MCP Servers:** For extended capabilities (like file system access, web browsing, code execution, specific API interactions, text-to-speech, speech-to-text), you need to run the corresponding MCP servers. Many servers require their own API keys or setup (e.g., ElevenLabs API key for TTS/STT, Google Cloud credentials for Vision/Calendar). Configure these in your MCP settings.
+- **Git:** Required for using git-related MCP tools.
 
 ## 1. Using Saiku in Your Own Projects
-Saiku is a versatile tool that enhances projects with advanced functionalities. This guide will help you integrate Saiku into your applications, covering the installation, configuration, and usage.
+Saiku can be integrated into your applications to leverage its agent capabilities.
 
 ### Installation
 
-- **Step**: Run \`npm install saiku\` in your project directory to add Saiku as a dependency.
+- **Step**: Run \`npm install saiku\` in your project directory.
 
 ### Usage
 
@@ -132,6 +108,7 @@ Saiku is a versatile tool that enhances projects with advanced functionalities. 
 - **Code**:
   \`\`\`javascript
   import Agent from 'saiku';
+  // Or specific components if needed
   \`\`\`
 
 #### 2. Initializing Saiku Agent
@@ -139,30 +116,26 @@ Saiku is a versatile tool that enhances projects with advanced functionalities. 
 - **Example**:
   \`\`\`javascript
   async function main(opts) {
+    // Ensure MCP client/server setup is handled appropriately
     const agent = new Agent(opts); // Initialize the agent
-    // Additional initialization code
+    // ...
   }
   \`\`\`
 
 #### 3. Configuring Saiku
 
 - **AgentOptions**:
-  - **actionsPath** (\`string\` | \`optional\`): Path to custom action scripts.
-  - **systemMessage** (\`string\` | \`optional\`): Default system message or instructions.
-  - **allowCodeExecution** (\`boolean\` | \`optional\`): Flag to enable/disable code execution.
-  - **interactive** (\`boolean\` | \`string\` | \`optional\`): Interactive mode setting.
-  - **speech** (\`'input' | 'output' | 'both' | 'none'\`): Configures speech functionality.
-  - **llm** (\`'openai' | 'vertexai' | 'ollama' | 'huggingface'\`): Specifies the language learning model. Default is \`'openai'\`.
-  - **[key: string]: any** (\`optional\`): Allows additional custom properties for unique project requirements.
+  - **systemMessage** (\`string\` | \`optional\`): Default system message or instructions for the LLM.
+  - **allowCodeExecution** (\`boolean\` | \`optional\`): Flag to enable/disable code execution (typically handled by a dedicated MCP server now).
+  - **interactive** (\`boolean\` | \`string\` | \`optional\`): Interactive mode setting for CLI usage.
+  - **llm** (\`'openai' | 'vertexai' | 'ollama' | 'huggingface' | 'mistral' | 'anthropic'\`): Specifies the language learning model. Default is \`'openai'\`.
+  - **[key: string]: any** (\`optional\`): Allows additional custom properties.
 
 - **Example Configuration**:
   \`\`\`javascript
   let opts = {
-    actionsPath: "../actions",
-    systemMessage: "Welcome to Saiku",
-    allowCodeExecution: true,
+    systemMessage: "You are Saiku, an AI assistant.",
     interactive: true,
-    speech: "both",
     llm: "openai",
     // Custom options
   };
@@ -171,21 +144,18 @@ Saiku is a versatile tool that enhances projects with advanced functionalities. 
 #### 4. Interacting with Saiku
 
 - **Process**:
-  - **Listening for User Input**: Implement input mechanisms for user interaction.
-  - **Processing Queries**: The agent processes and performs actions based on queries.
-  - **Generating Responses**: Generates responses or results from actions.
-  - **Speaking Output**: For speech-enabled applications, configure spoken output.
+  - **User Input**: Provide user queries or tasks.
+  - **MCP Interaction**: The agent interacts with connected MCP servers to use tools and access resources based on the query.
+  - **Response Generation**: Generates responses based on LLM processing and tool results.
 
 - **Example Interaction**:
   \`\`\`javascript
-  do {
-    let userQuery = await getUserInput(); // Get user input
+  // Assuming 'agent' is an initialized Agent instance
+  async function runInteraction(agent, userQuery) {
     agent.messages.push({ role: "user", content: userQuery });
-
-    await agent.interact(); // Process and perform actions
-
-    // Additional code
-  } while (userQuery.toLowerCase() !== "quit");
+    await agent.interact(); // Agent processes query, potentially using MCP tools
+    // Handle agent's response (last message in agent.messages)
+  }
   \`\`\`
 
 ## 2. Using the project itself
@@ -208,265 +178,160 @@ Saiku is a versatile tool that enhances projects with advanced functionalities. 
 
 - **Run the Project Locally**:
 
-Before starting Saiku locally, build the project using the following command:
-
-\`\`\`
+Before starting Saiku locally, build the project:
+\`\`\`bash
 npm run build
 \`\`\`
 
-To start the agent:
-
-\`\`\`
+To start the agent in interactive CLI mode:
+\`\`\`bash
 npm start
 \`\`\`
 
-For automated building during development, use:
-
-\`\`\`
+For automated building during development:
+\`\`\`bash
 npm run watch
 \`\`\`
 
-This will automatically build the project whenever files are changed, helping streamline the development process.
 ## 3. Global Installation (Not Recommended Yet)
 
-Saiku is available globally but is still in early development. Local installation is recommended.
-
+Global installation is possible but not recommended due to ongoing development.
 \`\`\`bash
 npm install -g saiku
 \`\`\`
 
-### Documentation and API
-
-For detailed documentation and API usage, refer to the upcoming Saiku documentation, which will provide comprehensive guidance for advanced uses.
-
----
-
-This guide is designed to provide clarity and ease of use for integrating Saiku into various projects, catering to a wide range of developers.
-
-Although Saiku is available as an npm package, we are still in the early stages of development, and drastic changes to the architecture will occur. We don't recommend installing it globally yet. However, if you still wish to do so:
-
-\`\`\`
-npm install -g saiku
-\`\`\`
 ## Demo
 
 https://github.com/nooqta/saiku/assets/3036133/87752826-fc6a-4c16-91a7-917b0f79427a
 
 ### A Jupyter notebook available on Google Colab:
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nooqta/saiku/blob/main/saiku-demo-notebook.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nooqta/saiku/blob/main/saiku-demo-notebook.ipynb) (Note: May require updates for MCP compatibility)
 
-### Setting Up Environment Variables
+## Setting Up Environment Variables
 
-Before running Saiku, configure the necessary environment variables. Copy the example environment file and then fill in the details.
-
-\`\`\`
+Configure necessary environment variables for the core agent and any MCP servers you intend to use. Copy the example environment file:
+\`\`\`bash
 cp .env.example .env
 \`\`\`
 
-Edit the \`.env\` file to include your specific information:
+Edit the \`.env\` file. Minimally, you need an LLM API key:
+\`\`\`dotenv
+# OpenAI (Example)
+OPENAI_API_KEY=your_openai_api_key
+OPENAI_MODEL=gpt-4-turbo # Or another model
 
+# Add other API keys as needed for specific MCP servers
+# e.g., ELEVENLABS_API_KEY=... for the ElevenLabs MCP server
+# e.g., GOOGLE_APPLICATION_CREDENTIALS=path/to/your/keyfile.json for Google Cloud servers
 \`\`\`
-# OpenAI
-OPENAI_API_KEY=
-OPENAI_MODEL=gpt-3.5-turbo
-# Eleven Labs
-ELEVENLABS_API_KEY=
-# Database related
-DB_HOST=
-DB_USER=
-DB_PASSWORD=
-# Email related
-EMAIL_SERVICE=
-EMAIL_USER=
-DISPLAY_FROM_EMAIL=
-EMAIL_PASS=
-# User related
-USER=
-COMPANY=
-COUNTRY=
-CITY=
-PHONE=
-LATITUDE=
-LONGITUDE=
-# Twilio
-TWILIO_ACCOUNT_SID=
-TWILIO_AUTH_TOKEN=
-# Weather API
-WEATHER_API_KEY=
-# Stability AI
-STABILITY_API_KEY=
-# GITLAB
-GITLAB_GRAPHQL_ENDPOINT=
-GITLAB_PERSONAL_ACCESS_TOKEN=
-GITLAB_USERNAME=
-GITLAB_VERSION=
-GITLAB_API_VERSION=
-\`\`\`
+Refer to the documentation of individual MCP servers for their specific environment variable requirements.
 
-### Available Commands
+## Available Commands
 
-Use Saiku with various options to tailor its operation to your needs:
-
+Use the Saiku CLI with various options:
 \`\`\`
 AI agent to help automate your tasks
 
 Options:
   -v, --version                Output the current version.
-  -exec, --allowCodeExecution  Execute the code without prompting the user.
-  -s, --speech <type>          Receive voice input from the user and/or output responses as speech.
-                               Possible values: input, output, both, none. Default is "none".
+  -exec, --allowCodeExecution  (Deprecated - Handled by MCP) Execute code without prompting.
   -role, --systemMessage       The model system role message.
-  -m, --llm <model>            Specify the language model to use.
-                               Possible values: openai, vertexai, ollama, and huggingface. Default is "openai".
+  -m, --llm <model>            Specify the language model (openai, vertexai, ollama, huggingface, mistral, anthropic). Default: openai.
   -h, --help                   Display help for command.
 
 Commands:
-  action [options]             Manage actions: create an new action using AI, list available actions and activate an action.
-  autopilot [options]          AI agent to help automate your tasks on autopilot mode (in progress).
+  mcp [options]                Manage MCP servers.
+  workflow [options]           Manage and run workflows.
+  autopilot [options]          (Experimental) Run Saiku in autopilot mode.
   serve                        Chat with the Saiku agent in the browser.
+  help [command]               Display help for a specific command.
 \`\`\`
 
 #### Examples:
 
-To allow code execution without prompting:
-
-\`\`\`
-saiku -exec
-\`\`\`
-or
-\`\`\`
-npm start -- -exec
+To start the interactive CLI with a specific LLM:
+\`\`\`bash
+npm start -- -m ollama
 \`\`\`
 
-To enable voice input and output:
-\`\`\`
-saiku -s both
-\`\`\`
-or
-\`\`\`
-npm start -- --speech both
+To run a specific workflow:
+\`\`\`bash
+npm start -- workflow run <workflow_name>
 \`\`\`
 
-To specify a language model:
-\`\`\`
-saiku -m huggingface
-\`\`\`
-or
-\`\`\`
-npm start -- --llm huggingface
+To list connected MCP servers:
+\`\`\`bash
+npm start -- mcp list
 \`\`\`
 
-To chat with Saiku in the browser
-\`\`\`
-saiku serve
-# or
+To chat with Saiku in the browser:
+\`\`\`bash
 npm start -- serve
 \`\`\`
 
-To create a new action
-\`\`\`
-saiku action create
-# or
-npm start -- action create
-\`\`\`
+## Use Cases (via MCP & Extensions)
 
-## Use Cases
+Saiku achieves tasks by leveraging tools provided by connected MCP servers or through specific extensions.
 
-### Use Case 1: Transcribe Audio to Text
+- **Transcribe Audio to Text:** Use an STT MCP server (e.g., ElevenLabs, Whisper) to transcribe audio files.
+- **Extract Text from Image:** Use a Vision MCP server (e.g., Google Vision) to perform OCR on images.
+- **Summarize Long Articles:** The core LLM can summarize provided text, potentially fetched via a Filesystem or HTTP MCP server.
+- **HTML to PDF Conversion:** Use a Puppeteer or similar MCP server with HTML-to-PDF capabilities.
+- **Take Screenshot of Webpage:** Use a Puppeteer MCP server.
+- **Text to Speech:** Use a TTS MCP server (e.g., ElevenLabs).
+- **File Actions (Read/Write/List):** Use a Filesystem MCP server.
+- **Database Queries:** Use a custom MCP server connected to your database.
+- **Git Operations:** Use a Git MCP server.
+- **API Interactions (GitLab, GitHub, etc.):** Use specific MCP servers designed for those APIs.
+- **Voice Interaction:** Use the VS Code Cline Voice Assistant extension, which coordinates with STT/TTS MCP servers.
 
-Prompt Example: "Please transcribe the audio from interview.mp3."
-Description: Saiku will use the speech_to_text function to transcribe the audio file interview.mp3 and provide the user with the text content.
+## Workflows
 
-### Use Case 2: Extract Text from an Image
+Saiku includes a workflow engine that allows you to define complex, multi-step tasks in a JSON format. These workflows can chain together multiple LLM calls and MCP tool uses to automate sophisticated processes.
 
-Prompt Example: "Extract text from this photo image_of_document.jpg."
-Description: Saiku will use google_vision with the DOCUMENT_TEXT_DETECTION feature to analyze the image image_of_document.jpg and return any readable text found in the image.
+- **Define:** Create workflow JSON files (see \`workflows.json\` for examples).
+- **List:** \`npm start -- workflow list\`
+- **Run:** \`npm start -- workflow run <workflow_name> [input_data]\`
 
-### Use Case 3: Summarize a Long Article
-
-Prompt Example: "Summarize the following article content for me: ...(article text)..."
-Description: Saiku utilizes the text_summarizer function to produce a concise summary of the provided article text.
-
-### Use Case 4: HTML to PDF Conversion
-
-Prompt Example: "Convert this HTML code to a PDF file and save it as report.pdf."
-Description: Saiku employs the html_to_pdf tool to transform the given HTML code into a PDF document and saves it with the filename report.pdf.
-
-### Use Case 5: Take a Screenshot of a Webpage
-
-Prompt Example: "Take a full-page screenshot of the website at http://example.com and name the file screenshot.png."
-Description: Saiku uses the take_screenshot feature, set to capture the full page, to create an image file screenshot.png of the URL provided.
-
-### Use Case 6: Text to Speech
-
-Prompt Example: "Please convert the following text to speech: Hello World!."
-Description: Saiku runs the text_to_speech function to convert the text "Hello World!" into an audio file and will play it if the user requests.
-
-### Use Case 7: Create a Simple Chart
-
-Prompt Example: "Make a pie chart with this data: { 'Data A': 30, 'Data B': 70 }."
-Description: Using the d3_chart_generation, Saiku will generate a pie chart image based on the data provided.
-
-### Use Case 8: Parse PDF Content
-
-Prompt Example: "Extract the text from the PDF file named report.pdf."
-Description: Saiku will apply the parse_pdf function to read the PDF file report.pdf and extract its text content.
-
-### Use Case 9: Perform a Database Query
-
-Prompt Example: "Perform a SQL query SELECT * FROM users on the local userDB database."
-Description: Saiku executes the database_query action, running the provided SQL query on the specified database.
-
-### Use Case 10: File Actions (Read/Write)
-
-Prompt Example: "Create a text file named notes.txt with the following content: Meeting notes...."
-Description: Saiku will utilize the file_action function to write the provided content into a new text file called notes.txt.
 ## Future Features
 
-- ~~**Incorporation of Diverse Models**: While currently relying on OpenAI and its code interpreter, future versions of Saiku aim to incorporate various other AI and LLM models to enhance its capabilities and versatility~~
-- **Web Compatible Version**: Development of a web-compatible version of Saiku to ensure easy accessibility and integration into web-based platforms.
-- **Python Version**: Creation of a Python version of Saiku to cater to Python developers and AI enthusiasts, allowing seamless integration into Python-centric projects.
-- **Configuration Management**: Implementation of a robust configuration management system to ensure Saiku’s smooth and efficient operation in diverse environments.
-- **Enhanced Debugging and Logging**: Improvement in debugging and logging capabilities for easier identification and resolution of issues, ensuring Saiku's robust performance.
-- **Comprehensive Tests**: Development of comprehensive tests to continuously evaluate and ensure Saiku's functionality, reliability, and performance.
-- ~~**Voice Commands**: Integration with technologies like Whisper for efficient and user-friendly voice command functionalities.~~
-- ~~**Speaking Agent**: Implementation of Text-to-Speech technologies like Elevenlabs, enabling Saiku to interact using voice, enhancing user experience.~~
-- **Enhanced Memory Handling**: Upgrades in memory handling for optimal and consistent performance.
-- **Document Summarization**: Integration of document summarization features for effective handling of large textual data.
-- **Advanced Actions**: Inclusion of computer vision and image interpretation capabilities, broadening the spectrum of tasks Saiku can adeptly handle.
-- **OpenAI Cost Tracking**: Incorporating features to track and analyze the costs associated with OpenAI API usage, enabling better budget management and cost-efficiency.
-- **Budget Settings**: Implementation of budget settings to allow users to set and manage spending limits on AI resources, ensuring cost-effective operation.
-- **Multi-Agent Systems**: Exploration and integration of multi-agent systems to promote collaborative problem-solving and to enrich the PEAS framework within Saiku, potentially elevating the project's ability to handle complex, dynamic environments.
-- **PEAS Enhancement**: Further refining the existing PEAS framework to accommodate a wider range of environments, actuator capabilities, and sensor inputs, aiming for a more versatile and adaptive AI agent.
+- **Enhanced Workflow Engine**: More complex logic, error handling, and dynamic step generation in workflows.
+- **Improved MCP Server Management**: Easier discovery, installation, and configuration of MCP servers.
+- **Multi-Agent Collaboration**: Exploring scenarios where multiple Saiku agents (or other MCP-compatible agents) can collaborate.
+- **Advanced Memory/Context Management**: More sophisticated techniques for handling long-running tasks and large contexts.
+- **Proactive Assistance**: Developing capabilities for the agent to suggest actions or workflows proactively.
+- **Refined PEAS Implementation**: Continuously improving how the agent senses its environment and acts within it via MCP.
+- **Comprehensive Tests**: Expanding test coverage for core agent logic, MCP interactions, and workflows.
+- **Cost Tracking & Budgeting**: Integrating better mechanisms for tracking and managing API costs.
 
 ## Contributing
 
-We welcome contributions from the community. If you'd like to contribute, please follow these steps:
+We welcome contributions! Please follow these steps:
 
 1. Fork the repository
 2. Create your feature branch (\`git checkout -b feature/YourFeature\`)
 3. Commit your changes (\`git commit -m 'Add some feature'\`)
-4. Push to the branch (\`git commit push origin feature/YourFeature\`)
+4. Push to the branch (\`git push origin feature/YourFeature\`)
 5. Create a new Pull Request
 
-[Contributing Guidelines](CONTRIBUTING.md).
+See [Contributing Guidelines](CONTRIBUTING.md).
 
 ## Support Saiku
 
-We are actively seeking sponsors and contributors. If you believe in the potential of Saiku, support the project in any way you can. Your support will help us make Saiku a reality.
+We are actively seeking sponsors and contributors. Your support helps accelerate development.
 
 ## Feedback and Issues
 
-We value your feedback. If you encounter any issues or have suggestions for improvements, please open an issue on our GitHub repository.
+Please open an issue on our GitHub repository for feedback or bug reports.
 
 ## API Rate Limits/Cost
 
-Please be aware of the rate limits and costs associated with the APIs used by Saiku. Each service provider may have different policies, and it's essential to stay informed to avoid unexpected charges.
+Be mindful of the rate limits and costs associated with the LLM APIs and any external services used by MCP servers.
 
 ## Note
 
-Please note that we are in the experimental stage. The architecture and features are subject to significant changes.
+Saiku is under active development. Expect changes to the architecture and features.
 
 ## License
 
