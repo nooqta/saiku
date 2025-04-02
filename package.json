@@ -107,6 +107,11 @@
   "bin": {
     "saiku": "dist/bin/cli.js"
   },
+  "files": [
+    "dist",
+    "LICENSE",
+    "readme.md"
+  ],
   "_moduleAliases": {
     "@": "dist"
   }
