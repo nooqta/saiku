@@ -55,3 +55,5 @@ credentials.json
 .vercel
 saiku.*
 add-deps.js
+extensions/cline
+mcp-settings.json

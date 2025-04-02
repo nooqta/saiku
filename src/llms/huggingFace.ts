@@ -34,14 +34,15 @@ export class HuggingFace implements LLM {
         if (content) {
           this.agent.messages.push({
             role: "assistant",
-            content,
-          });
-    
-          if (["both", "output"].includes(this.agent.options.speech || 'none')) {
-            await this.agent.speak(content, true);
-          }
-          this.agent.displayMessage(content);
-        } else {
+        content,
+      });
+
+      // Remove speech output logic
+      // if (["both", "output"].includes(this.agent.options.speech || 'none')) {
+      //   await this.agent.speak(content, true);
+      // }
+      this.agent.displayMessage(content);
+    } else {
           let actionName = functionCall?.name ?? "";
           let args = functionCall?.arguments ?? "";
           let result: any = "";

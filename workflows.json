@@ -1,0 +1,27 @@
+{
+  "workflows": [
+    {
+      "name": "example-tts-workflow",
+      "description": "Generates speech from text using ElevenLabs and saves it.",
+      "steps": [
+        {
+          "id": "generate_speech",
+          "server": "elevenlabs-mcp-server",
+          "tool": "elevenlabs_tts",
+          "arguments": {
+            "text": "This is a test from Saiku Workflow!",
+            "filename": "saiku_workflow_test_output"
+          }
+        },
+        {
+           "id": "log_completion",
+           "server": "mcp-server-commands",
+           "tool": "run_command",
+           "arguments": {
+             "command": "echo 'Workflow completed. Speech saved to ${steps.generate_speech.result.filePath}'"
+           }
+        }
+      ]
+    }
+  ]
+}

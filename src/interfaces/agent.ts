@@ -1,13 +1,15 @@
 import { Action } from "../interfaces/action";
 
 export interface AgentOptions {
-    actionsPath?: string;
-    systemMessage?: string;
-    allowCodeExecution?: boolean;
-    interactive?: boolean | string;
-    speech?: 'input' | 'output' | 'both' | 'none' ;
-    llm: string;
-    [key: string]: any;
+    actionsPath?: string;            // Path to legacy actions (for backward compatibility)
+    systemMessage?: string;          // System prompt for the LLM
+    allowCodeExecution?: boolean;    // Whether to allow code execution
+    interactive?: boolean | string;  // Whether to run in interactive mode
+    speech?: 'input' | 'output' | 'both' | 'none'; // Speech options
+    llm: string;                     // LLM to use
+    useMcp?: boolean;                // Whether to use MCP (default: true)
+    mcpSettingsPath?: string;        // Path to the MCP settings JSON file
+    [key: string]: any;              // Other options
   }
 
 export interface IAgent {
@@ -19,9 +21,9 @@ export interface IAgent {
   objectives: any[];
   options: AgentOptions;
 
-  listen(): Promise<string>;
+  // listen(): Promise<string>; // Remove again
   think(): Promise<any>;
-  speak(text: string, useLocal?: boolean): Promise<void>;
+  // speak(text: string, useLocal?: boolean): Promise<void>; // Remove again
   interact(): Promise<string|void>;
   displayMessage(message: string): void;
   sense(): Promise<any>;
@@ -34,4 +36,3 @@ export interface IAgent {
   getMemory(): any;
   updateMemory(args: any): any;
 }
-

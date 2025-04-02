@@ -113,11 +113,12 @@ export default class ClaudeModel implements LLM {
         if (useDelegate) {
           return contentBlock.text;
         } else {
-          if (
-            ["both", "output"].includes(this.agent.options.speech || "none")
-          ) {
-            await this.agent.speak(contentBlock.text);
-          }
+          // Remove speech output logic
+          // if (
+          //   ["both", "output"].includes(this.agent.options.speech || "none")
+          // ) {
+          //   await this.agent.speak(contentBlock.text);
+          // }
           this.agent.displayMessage(contentBlock.text); // Display the textual content
         }
       } else if (contentBlock.type === "tool_use") {

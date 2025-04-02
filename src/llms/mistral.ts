@@ -87,9 +87,10 @@ export default class MistralModel implements LLM {
       if (useDelegate) {
         return content;
       } else {
-        if (["both", "output"].includes(this.agent.options.speech || "none")) {
-          await this.agent.speak(content);
-        }
+        // Remove speech output logic
+        // if (["both", "output"].includes(this.agent.options.speech || "none")) {
+        //   await this.agent.speak(content);
+        // }
         this.agent.displayMessage(content);
       }
     } else {

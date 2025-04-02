@@ -197,10 +197,11 @@ export class GoogleVertexAI implements LLM {
         role: "assistant",
         content,
       });
-      
-      if(['both', 'output'].includes(this.agent.options.speech || 'none')) {
-        await this.agent.speak(content, true);
-      }
+
+      // Remove speech output logic
+      // if(['both', 'output'].includes(this.agent.options.speech || 'none')) {
+      //   await this.agent.speak(content, true);
+      // }
       this.agent.displayMessage(content);
     } else {
       let actionName = functionCall?.name ?? "";

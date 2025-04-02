@@ -35,9 +35,11 @@ class TextToSpeechAction implements Action {
     const { text, play } = args;
 
     if (os.platform() === 'darwin') {
-      // For macOS, use 'say' command
-      await this.agent.functions["execute_code"].run({ code: `say "${text}"`, language: 'applescript' });
-      return `Text spoken on macOS using Siri: ${text}`;
+      // For macOS, use 'say' command via agent.act and execute_command tool
+      // Ensure text is properly escaped for the shell command
+      const escapedText = text.replace(/(["'$`\\])/g,'\\$1'); // Basic escaping
+      await this.agent.act('execute_command', { command: `say "${escapedText}"` });
+      return `Text spoken on macOS using system command: ${text}`;
     } else {
       try {
         const openai = new OpenAI({
@@ -49,9 +51,10 @@ class TextToSpeechAction implements Action {
           input: text,
         });
 
-        const audioBuffer = Buffer.from(await speechResponse.arrayBuffer());
+        const arrayBuffer = await speechResponse.arrayBuffer(); // Get the ArrayBuffer
+        const uint8Array = new Uint8Array(arrayBuffer); // Create Uint8Array from ArrayBuffer
         const audioFilePath = 'speak.mp3'; // Path for the audio file
-        fs.writeFileSync(audioFilePath, audioBuffer);
+        fs.writeFileSync(audioFilePath, uint8Array); // Write the Uint8Array
 
         // Play the audio file if required
         if (play) {

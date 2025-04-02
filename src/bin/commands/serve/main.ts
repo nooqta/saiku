@@ -8,17 +8,18 @@ async function main(opts: any) {
   // Initialize the agent
   const agent = new Agent(opts);
   agent.options = opts;
-  // Start the socket server
-  await agent.functions["chat"].run({});
+  // Start the socket server - TODO: Refactor this, no direct 'chat' function/tool
+  // await agent.functions["chat"].run({}); 
+  console.warn("Warning: 'agent.functions[\"chat\"]' call in serve/main.ts needs refactoring.");
+
 
   // Check if 'node_modules' directory exists
   await checkAndInstallPackages(agent);
 
   // start the nextjs server
 
-  await agent.functions["execute_code"].run({
-    language: "bash",
-    code: `cd ${path.join(
+  await agent.act('execute_command', { // Use agent.act and execute_command tool
+    command: `cd ${path.join(
       process.cwd(),
       "extensions",
       "ai-chatbot"
@@ -38,9 +39,8 @@ async function checkAndInstallPackages(agent: Agent) {
   if (!existsSync(nodeModulesPath)) {
     console.log("'node_modules' directory not found. Installing packages...");
     try {
-      await agent.functions["execute_code"].run({
-        language: "bash",
-        code: `cd ${path.join(
+      await agent.act('execute_command', { // Use agent.act and execute_command tool
+        command: `cd ${path.join(
           process.cwd(),
           "extensions",
           "ai-chatbot"
