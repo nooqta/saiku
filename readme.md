@@ -99,47 +99,47 @@ Saiku can be integrated into your applications to leverage its agent capabilitie
 
 ### Installation
 
-- **Step**: Run \`npm install saiku\` in your project directory.
+- **Step**: Run ```npm install saiku``` in your project directory.
 
 ### Usage
 
 #### 1. Importing Saiku
 
 - **Code**:
-  \`\`\`javascript
+  ```javascript
   import Agent from 'saiku';
   // Or specific components if needed
-  \`\`\`
+  ```
 
 #### 2. Initializing Saiku Agent
 
 - **Example**:
-  \`\`\`javascript
+  ```javascript
   async function main(opts) {
     // Ensure MCP client/server setup is handled appropriately
     const agent = new Agent(opts); // Initialize the agent
     // ...
   }
-  \`\`\`
+  ```
 
 #### 3. Configuring Saiku
 
 - **AgentOptions**:
-  - **systemMessage** (\`string\` | \`optional\`): Default system message or instructions for the LLM.
-  - **allowCodeExecution** (\`boolean\` | \`optional\`): Flag to enable/disable code execution (typically handled by a dedicated MCP server now).
-  - **interactive** (\`boolean\` | \`string\` | \`optional\`): Interactive mode setting for CLI usage.
-  - **llm** (\`'openai' | 'vertexai' | 'ollama' | 'huggingface' | 'mistral' | 'anthropic'\`): Specifies the language learning model. Default is \`'openai'\`.
-  - **[key: string]: any** (\`optional\`): Allows additional custom properties.
+  - **systemMessage** (`string` | `optional`): Default system message or instructions for the LLM.
+  - **allowCodeExecution** (`boolean` | `optional`): Flag to enable/disable code execution (typically handled by a dedicated MCP server now).
+  - **interactive** (`boolean` | `string` | `optional`): Interactive mode setting for CLI usage.
+  - **llm** (`'openai' | 'vertexai' | 'ollama' | 'huggingface' | 'mistral' | 'anthropic'`): Specifies the language learning model. Default is `'openai'`.
+  - **[key: string]: any** (`optional`): Allows additional custom properties.
 
 - **Example Configuration**:
-  \`\`\`javascript
+  ```javascript
   let opts = {
     systemMessage: "You are Saiku, an AI assistant.",
     interactive: true,
     llm: "openai",
     // Custom options
   };
-  \`\`\`
+  ```
 
 #### 4. Interacting with Saiku
 
@@ -149,56 +149,56 @@ Saiku can be integrated into your applications to leverage its agent capabilitie
   - **Response Generation**: Generates responses based on LLM processing and tool results.
 
 - **Example Interaction**:
-  \`\`\`javascript
+  ```javascript
   // Assuming 'agent' is an initialized Agent instance
   async function runInteraction(agent, userQuery) {
     agent.messages.push({ role: "user", content: userQuery });
     await agent.interact(); // Agent processes query, potentially using MCP tools
     // Handle agent's response (last message in agent.messages)
   }
-  \`\`\`
+  ```
 
 ## 2. Using the project itself
 ### Usage
 - **Clone the Repository**:
-  \`\`\`bash
+  ```bash
   git clone https://github.com/nooqta/saiku.git
-  \`\`\`
+  ```
 
 - **Navigate to Project Folder**:
-  \`\`\`bash
+  ```bash
   cd saiku
-  \`\`\`
+  ```
 
 - **Install Dependencies**:
-  \`\`\`bash
+  ```bash
   npm install
-  \`\`\`
+  ```
 
 
 - **Run the Project Locally**:
 
 Before starting Saiku locally, build the project:
-\`\`\`bash
+```bash
 npm run build
-\`\`\`
+```
 
 To start the agent in interactive CLI mode:
-\`\`\`bash
+```bash
 npm start
-\`\`\`
+```
 
 For automated building during development:
-\`\`\`bash
+```bash
 npm run watch
-\`\`\`
+```
 
 ## 3. Global Installation (Not Recommended Yet)
 
 Global installation is possible but not recommended due to ongoing development.
-\`\`\`bash
+```bash
 npm install -g saiku
-\`\`\`
+```
 
 ## Demo
 
@@ -211,12 +211,12 @@ https://github.com/nooqta/saiku/assets/3036133/87752826-fc6a-4c16-91a7-917b0f794
 ## Setting Up Environment Variables
 
 Configure necessary environment variables for the core agent and any MCP servers you intend to use. Copy the example environment file:
-\`\`\`bash
+```bash
 cp .env.example .env
-\`\`\`
+```
 
-Edit the \`.env\` file. Minimally, you need an LLM API key:
-\`\`\`dotenv
+Edit the `.env` file. Minimally, you need an LLM API key:
+```dotenv
 # OpenAI (Example)
 OPENAI_API_KEY=your_openai_api_key
 OPENAI_MODEL=gpt-4-turbo # Or another model
@@ -224,13 +224,13 @@ OPENAI_MODEL=gpt-4-turbo # Or another model
 # Add other API keys as needed for specific MCP servers
 # e.g., ELEVENLABS_API_KEY=... for the ElevenLabs MCP server
 # e.g., GOOGLE_APPLICATION_CREDENTIALS=path/to/your/keyfile.json for Google Cloud servers
-\`\`\`
+```
 Refer to the documentation of individual MCP servers for their specific environment variable requirements.
 
 ## Available Commands
 
 Use the Saiku CLI with various options:
-\`\`\`
+```
 AI agent to help automate your tasks
 
 Options:
@@ -246,29 +246,29 @@ Commands:
   autopilot [options]          (Experimental) Run Saiku in autopilot mode.
   serve                        Chat with the Saiku agent in the browser.
   help [command]               Display help for a specific command.
-\`\`\`
+```
 
 #### Examples:
 
 To start the interactive CLI with a specific LLM:
-\`\`\`bash
+```bash
 npm start -- -m ollama
-\`\`\`
+```
 
 To run a specific workflow:
-\`\`\`bash
+```bash
 npm start -- workflow run <workflow_name>
-\`\`\`
+```
 
 To list connected MCP servers:
-\`\`\`bash
+```bash
 npm start -- mcp list
-\`\`\`
+```
 
 To chat with Saiku in the browser:
-\`\`\`bash
+```bash
 npm start -- serve
-\`\`\`
+```
 
 ## Use Cases (via MCP & Extensions)
 
@@ -290,9 +290,9 @@ Saiku achieves tasks by leveraging tools provided by connected MCP servers or th
 
 Saiku includes a workflow engine that allows you to define complex, multi-step tasks in a JSON format. These workflows can chain together multiple LLM calls and MCP tool uses to automate sophisticated processes.
 
-- **Define:** Create workflow JSON files (see \`workflows.json\` for examples).
-- **List:** \`npm start -- workflow list\`
-- **Run:** \`npm start -- workflow run <workflow_name> [input_data]\`
+- **Define:** Create workflow JSON files (see `workflows.json` for examples).
+- **List:** ```npm start -- workflow list```
+- **Run:** ```npm start -- workflow run <workflow_name> [input_data]```
 
 ## Future Features
 
@@ -310,9 +310,9 @@ Saiku includes a workflow engine that allows you to define complex, multi-step t
 We welcome contributions! Please follow these steps:
 
 1. Fork the repository
-2. Create your feature branch (\`git checkout -b feature/YourFeature\`)
-3. Commit your changes (\`git commit -m 'Add some feature'\`)
-4. Push to the branch (\`git push origin feature/YourFeature\`)
+2. Create your feature branch (```git checkout -b feature/YourFeature```)
+3. Commit your changes (```git commit -m 'Add some feature'```)
+4. Push to the branch (```git push origin feature/YourFeature```)
 5. Create a new Pull Request
 
 See [Contributing Guidelines](CONTRIBUTING.md).
