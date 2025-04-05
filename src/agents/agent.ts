@@ -8,15 +8,19 @@ import OpenAIModel from "../llms/openai";
 import dotenv from "dotenv";
 import os from "os";
 import { AgentOptions, IAgent } from "../interfaces/agent";
-import { LLM } from "../interfaces/llm"; // Changed from @/
+import { LLM } from "../interfaces/llm";
 import { GoogleVertexAI } from "../llms/googleVertexAI";
 import Ollama from "../llms/ollama";
+import { ThinkingModule } from "./thinking";
+import { ActingModule } from "./acting";
+import { SensingModule } from "./sensing";
+import { MemoryModule, Message, ShortTermMemory } from "./memory"; // Import interfaces
 import { HuggingFace } from "../llms/huggingFace";
 import { SocketAdapterModel } from "../llms/adapters/socketAdapter";
 import MistralModel from "../llms/mistral";
 import ClaudeModel from "../llms/claude";
 import DeepseekModel from "../llms/deepseek";
-// Use the renamed class - Use default import as that's how client.ts exports
+import { Gemini } from "../llms/gemini";
 import McpClientManager from "../mcp/client";
 import { SimpleMcpClient } from "../mcp/simple-client";
 // Import executeWithMcp statically (already relative)
@@ -69,89 +73,95 @@ class Agent implements IAgent {
     return defaultOptions;
   }
 
-  // LLM model
+  // LLM model - Keep instance here as it's passed to ThinkingModule
   model!: LLM;
-  // MCP client - primarily McpClientManager, SimpleMcpClient might be unused now
+  // MCP client - Keep instance here as it's passed to ActingModule
   mcpClient: McpClientManager | SimpleMcpClient | null = null;
+  // Modules
+  private thinkingModule: ThinkingModule;
+  private actingModule: ActingModule;
+  private sensingModule: SensingModule;
+  private memoryModule: MemoryModule;
 
   // Agent properties
   score = 100;
-  messages: any[] = [];
   systemMessage = "You are a helpful assistant";
-
-  // Remove functions property (was for legacy actions)
-  // functions: { [key: string]: Action } = {};
-
-  // Tools for LLM (will be only MCP tools)
   actions: { [key: string]: any } = {};
-
-  // Agent memory
-  memory: any = {
-    lastAction: null, // Name of the last action
-    lastActionStatus: null, // 'success' or 'failure'
-  };
 
   // Agent state
   objectives: any[] = [];
-  options: AgentOptions = {
-    actionsPath: "../actions",
-    llm: "deepseek",
-    useMcp: true // Use MCP by default
-  };
+  options: AgentOptions;
   currentObjective: any = null;
-  currentMessages: any[] = [];
   services: any = {};
 
-  constructor(options: AgentOptions) {
-    // Remove actionPaths logic
-    // this.actionPaths = [...this.actionPaths, options.actionsPath || "../actions"];
-    this.options = { ...this.options, ...options };
-    if (options.systemMessage) {
-      this.systemMessage = options.systemMessage;
+  constructor(options: AgentOptions, mcpClientManager?: McpClientManager) {
+    const defaultOptions = Agent.loadOptions(options);
+    this.options = { ...defaultOptions, ...options };
+
+    if (this.options.systemMessage) {
+      this.systemMessage = this.options.systemMessage;
     }
 
-    // Initialize the LLM
-    this.init();
+    this.initLlm();
 
-    // --- Remove legacy action loading ---
-    // this.loadRequiredLegacyActions();
-    this.actions = []; // Start with empty actions until MCP loads
-    // --- End Remove legacy action loading ---
-
-    // Instantiate MCP client directly here if enabled
-    if (this.options.useMcp !== false && process.env.MCP_DISABLE !== '1') {
-        try {
-            // Assign path to variable first
-            const settingsPath = this.options.mcpSettingsPath;
-            if (!settingsPath) {
-                throw new Error("MCP Settings Path is missing in agent options.");
-            }
-            console.log(`[Agent Constructor] Instantiating McpClientManager with settings path: ${settingsPath}`);
-            // Pass the variable to the constructor
-            // Restore instantiation
-            this.mcpClient = new McpClientManager(settingsPath);
-        } catch (error: any) {
-            console.error(`[Agent Constructor] Failed to instantiate McpClientManager: ${error.message}`);
-            this.mcpClient = null; // Ensure it's null if instantiation fails
+    if (mcpClientManager) {
+      console.log("[Agent Constructor] Using provided McpClientManager instance.");
+      this.mcpClient = mcpClientManager;
+    } else if (this.options.useMcp !== false && process.env.MCP_DISABLE !== '1') {
+      try {
+        const settingsPath = this.options.mcpSettingsPath;
+        if (!settingsPath) {
+          const homeDir = os.homedir();
+          const defaultPath = path.join(homeDir, 'Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json');
+          if (fs.existsSync(defaultPath)) {
+            this.options.mcpSettingsPath = defaultPath;
+          } else {
+            throw new Error("MCP Settings Path is missing and default path not found.");
+          }
         }
-    } else {
-        console.log("[Agent Constructor] MCP is disabled by options or environment variable.");
+        const finalSettingsPath = this.options.mcpSettingsPath;
+        if (!finalSettingsPath) {
+          throw new Error("Failed to determine MCP settings path.");
+        }
+        console.log(`[Agent Constructor] Instantiating McpClientManager with settings path: ${finalSettingsPath}`);
+        this.mcpClient = new McpClientManager(finalSettingsPath);
+      } catch (error: any) {
+        console.error(`[Agent Constructor] Failed to instantiate McpClientManager: ${error.message}`);
         this.mcpClient = null;
+      }
+    } else {
+      console.log("[Agent Constructor] MCP is disabled or no manager provided.");
+      this.mcpClient = null;
     }
+
+    const memoryPersistencePath = path.join(os.homedir(), '.saiku', 'agent_memory.json');
+    this.memoryModule = new MemoryModule(memoryPersistencePath);
+    this.sensingModule = new SensingModule();
+    this.actingModule = new ActingModule(this.mcpClient);
+    this.thinkingModule = new ThinkingModule(this.model); // Pass initialized LLM
+
+    this.actions = [];
   }
 
+  // --- Interface Compliance Getters ---
+  public get messages(): any[] {
+    return this.memoryModule.getMessages();
+  }
 
-  /**
-   * Asynchronously initializes the agent, ensuring MCP connection is established
-   * before proceeding. This should be called after the constructor.
-   */
+  public get memory(): any {
+    return this.memoryModule.getShortTermMemory();
+  }
+
+  public getMemory(): any {
+    return this.memoryModule.getShortTermMemory();
+  }
+  // --- End Interface Compliance Getters ---
+
+
   async initialize() {
     if (this.options.useMcp !== false && process.env.MCP_DISABLE !== '1') {
       console.log("Awaiting MCP initialization...");
-      // Call the renamed method
-      await this.initializeMcpConnections().catch((error: any) => { // Add type annotation
-        // Error is already logged inside initializeMcpConnections
-        // We just prevent it from crashing the main initialization if MCP fails
+      await this.initializeMcpConnections().catch((error: any) => {
         console.error("[Agent Initialize] Caught error during MCP connection setup:", error?.message);
       });
       console.log("MCP initialization complete (or skipped/failed).");
@@ -160,407 +170,246 @@ class Agent implements IAgent {
     }
   }
 
-  /**
-   * Initialize MCP connections using the instantiated client.
-   */
   private async initializeMcpConnections() {
-    // Check if the client was successfully instantiated in the constructor
     if (this.mcpClient instanceof McpClientManager) {
         try {
             console.log('[Agent] Initializing MCP connections via settings file...');
-            // Call the method to connect to all servers defined in settings
             await this.mcpClient.initializeAndConnectServers();
             console.log('[Agent] MCP server initialization process completed.');
-
-            // After initialization attempt, refresh tools based on connected servers
             await this.refreshTools();
         } catch (error) {
             console.error('[Agent] MCP connection initialization error:', error);
-            // Optionally nullify the client if connection fails critically
-            // this.mcpClient = null;
         }
     } else if (this.mcpClient instanceof SimpleMcpClient) {
-        // Handle SimpleMcpClient connection if it's ever used
         try {
             if (!this.mcpClient.isConnected()) {
-                // await this.mcpClient.connect(); // Assuming connect method exists
                 console.log("[Agent] Simple MCP Client connected (if applicable).");
                 await this.refreshTools();
             }
-        } catch(initError: any) { // Add type annotation
+        } catch(initError: any) {
              console.error('[Agent] Simple MCP Client connection error:', initError);
         }
     } else {
         console.log("[Agent] No valid MCP client instance found for initialization.");
-      // Removed throw error; as it was likely a typo from merge conflict
     }
   }
 
-  /**
-  // Removed checkServerRunning method as it's no longer needed
-
-  /**
-   * Refresh tools based on currently connected MCP servers.
-   */
   public async refreshTools() {
-    // Load tools from MCP if the manager has active connections
     if (this.mcpClient instanceof McpClientManager && this.mcpClient.hasActiveConnections()) {
         console.log('[Agent] Refreshing tools from connected MCP servers...');
-        await this.loadMcpTools(); // loadMcpTools internally calls the new listTools
-    } else if (this.mcpClient instanceof SimpleMcpClient && this.mcpClient.isConnected()) { // Check if SimpleMcpClient exists and has isConnected
-        // Handle simple client case if necessary
+        await this.loadMcpTools();
+    } else if (this.mcpClient instanceof SimpleMcpClient && this.mcpClient.isConnected()) {
         console.log('[Agent] Refreshing tools (Simple MCP Client)...');
-        // Simple client might need its own tool loading logic if different
-        await this.loadMcpTools(); // Assuming loadMcpTools works for simple client too
+        await this.loadMcpTools();
     } else {
         console.log('[Agent] No active MCP connections. Skipping tool refresh.');
     }
-
-    // --- Remove Legacy Action Loading ---
-    // --- End Remove Legacy Action Loading ---
-
-    // Get tool definitions (will now only include MCP tools)
     this.actions = await this.getToolDefinitions();
-
-    // Log the available tools
     console.log(`Agent tools refreshed: ${this.actions.length} tools available`);
     return this.actions;
   }
 
-  /**
-   * Load available tools from MCP
-   */
   private async loadMcpTools() {
     if (!this.mcpClient) return;
-
     try {
-      // Get available tools from MCP, ensuring it's an array
       const mcpToolsResult = await this.mcpClient.listTools();
-      const mcpTools = Array.isArray(mcpToolsResult) ? mcpToolsResult : []; // Default to empty array if not an array
-
-      // Display available MCP tools
+      const mcpTools = Array.isArray(mcpToolsResult) ? mcpToolsResult : [];
       this.displayMessage(`_Loaded ${mcpTools.length} MCP tools_`);
-
-      // Load resources as well (they don't become tools but are available to the agent)
-      // Add similar safety check if listResources might fail unexpectedly
+      // Load resources and prompts (handle errors gracefully)
       try {
-        // Add type guard
-        if (this.mcpClient instanceof McpClientManager) {
-            await this.mcpClient.listResources();
-        } else {
-            console.log("[Agent loadMcpTools] Skipping listResources for non-SaikuMcpClient.");
-        }
-      } catch (resError: any) { // Add type annotation
-         // Gracefully handle 'Method not found' error for listResources
-         if (resError?.code === -32601) {
-            // Log a less verbose warning for this specific, expected error
-            console.warn(`[MCP Client] Warning: listResources method not found on a server (expected for some servers).`);
-         } else {
-            // Log other errors fully
-            console.error(`Error loading MCP resources: ${resError.message}`, resError);
-         }
-      }
-
-      // Prompts are also loaded but not shown as tools
-      // Add similar safety check if listPrompts might fail unexpectedly
+        if (this.mcpClient instanceof McpClientManager) await this.mcpClient.listResources();
+      } catch (resError: any) { if (resError?.code !== -32601) console.error(`Error loading MCP resources: ${resError.message}`, resError); }
       try {
-         // Add type guard
-         if (this.mcpClient instanceof McpClientManager) {
-            await this.mcpClient.listPrompts();
-         } else {
-             console.log("[Agent loadMcpTools] Skipping listPrompts for non-SaikuMcpClient.");
-         }
-      } catch (promptError: any) { // Add type annotation
-         // Also gracefully handle 'Method not found' for listPrompts if needed
-         if (promptError?.code === -32601) {
-             console.warn(`[MCP Client] Warning: listPrompts method not found on a server.`);
-         } else if (promptError?.message?.includes('listPrompts aggregation not yet implemented')) {
-             // Also handle the specific "not yet implemented" message cleanly
-             console.log(`[MCP Client] listPrompts aggregation not yet implemented.`);
-         }
-         else {
-             console.error(`Error loading MCP prompts: ${promptError.message}`, promptError);
-         }
-      }
+         if (this.mcpClient instanceof McpClientManager) await this.mcpClient.listPrompts();
+      } catch (promptError: any) { if (promptError?.code !== -32601 && !promptError?.message?.includes('listPrompts aggregation not yet implemented')) console.error(`Error loading MCP prompts: ${promptError.message}`, promptError); }
     } catch (error: any) {
       console.error(`Error loading MCP tools: ${error.message}`);
     }
   }
-  init() {
+
+  initLlm() {
     const { llm } = this.options;
     switch (llm) {
       case "openai":
-        this.model = new OpenAIModel(this, {
-          apiKey: process.env.OPENAI_API_KEY,
-        });
+        this.model = new OpenAIModel(this, { apiKey: process.env.OPENAI_API_KEY });
         break;
       case "deepseek":
-        this.model = new DeepseekModel(this, {
-          apiKey: process.env.DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY,
-        });
+        this.model = new DeepseekModel(this, { apiKey: process.env.DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY });
         break;
       case "vertexai":
-        this.model = new GoogleVertexAI(this, {
-          projectId: process.env.GOOGLE_PROJECT_ID,
-          apiEndpoint: process.env.GOOGLE_API_ENDPOINT,
-          modelId: process.env.GOOGLE_MODEL_ID,
-        });
+        this.model = new GoogleVertexAI(this, { projectId: process.env.GOOGLE_PROJECT_ID, apiEndpoint: process.env.GOOGLE_API_ENDPOINT, modelId: process.env.GOOGLE_MODEL_ID });
         break;
       case "ollama":
-        this.model = new Ollama(this, {
-          baseURL: process.env.OLLAMA_BASE_URL,
-          model: process.env.OLLAMA_MODEL,
-        });
+        this.model = new Ollama(this, { baseURL: process.env.OLLAMA_BASE_URL, model: process.env.OLLAMA_MODEL });
         break;
       case "huggingface":
-        this.model = new HuggingFace(this, {
-          apiKey: process.env.HUGGINGFACE_API_KEY,
-          model: process.env.HUGGINGFACE_MODEL,
-        });
+        this.model = new HuggingFace(this, { apiKey: process.env.HUGGINGFACE_API_KEY, model: process.env.HUGGINGFACE_MODEL });
         break;
       case "socket":
         this.model = new SocketAdapterModel(this, this.options);
         break;
       case "mistral":
-        this.model = new MistralModel(this, {
-          apiKey: process.env.MISTRAL_API_KEY,
-        });
+        this.model = new MistralModel(this, { apiKey: process.env.MISTRAL_API_KEY });
         break;
       case "claude":
-        this.model = new ClaudeModel(this, {
-          apiKey: process.env.ANTHROPIC_API_KEY,
-        });
+        this.model = new ClaudeModel(this, { apiKey: process.env.ANTHROPIC_API_KEY });
+         break;
+      case "gemini":
+        this.model = new Gemini(this, { apiKey: process.env.GEMINI_API_KEY, modelId: process.env.GEMINI_MODEL_ID });
         break;
-      // @todo: add support for other llms
-      default:
-        this.model = new DeepseekModel(this, {
-          apiKey: process.env.DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY,
-        });
+       default:
+         this.model = new DeepseekModel(this, { apiKey: process.env.DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY });
         break;
     }
   }
-
-  // --- Remove listen method ---
-  // async listen(): Promise<string> { ... }
-  // --- End Remove listen method ---
-
 
   async think(useFunctionCalls = true): Promise<any> {
+    const messages = this.memoryModule.getMessagesForLLM();
+    const sensedContext = await this.sensingModule.sense();
+    const thinkingContext = {
+      systemMessage: this.systemMessage,
+      messages: messages,
+      sensedData: sensedContext,
+      availableTools: useFunctionCalls ? await this.getToolDefinitions() : [],
+      llmModel: this.model
+    };
     try {
-      const systemMessage = {
-        role: "user",
-        content: `${this.systemMessage}\n${JSON.stringify(await this.sense())}`,
-      };
-      const messages = [systemMessage, ...this.messages];
-      this.currentMessages = messages;
-
-      // Get the latest tool definitions
-      // If MCP is available, this will include both MCP tools and legacy actions
-      const tools = useFunctionCalls ? await this.getToolDefinitions() : [];
-
-      let decision = await this.model.predict({
-        // @ts-ignore
-        prompt: this.currentMessages.findLast(
-          (message: any) => message.role === "user"
-        )?.content,
-        messages:
-          this.currentMessages.length > 10
-            ? [
-                this.currentMessages[0],
-                ...this.currentMessages.slice(this.currentMessages.length - 10),
-              ]
-            : this.currentMessages,
-        model: this.model.name,
-        ...(useFunctionCalls ? { tools, tool_choice: "auto" } : {}),
-      });
-
-      return decision;
+      const response: import("../interfaces/llm").PredictionResponse = await this.thinkingModule.think(thinkingContext);
+      if (response && response.text) {
+          if (typeof response.text === 'object' && response.text.tool_calls) {
+              this.memoryModule.addMessage({ role: 'assistant', content: response.text });
+          } else if (typeof response.text === 'string') {
+              this.memoryModule.addMessage({ role: 'assistant', content: response.text });
+          } else {
+               console.warn("Received unexpected LLM response structure:", response.text);
+               this.memoryModule.addMessage({ role: 'assistant', content: JSON.stringify(response.text) });
+          }
+      } else {
+          console.warn("LLM response or response text was empty.");
+          this.memoryModule.addMessage({ role: 'system', content: "[LLM returned empty response]" });
+      }
+      return response;
     } catch (error: any) {
-      console.log(`An error occurred: ${error.message}`);
-      process.exit(1);
-      return error.message;
+      console.error(`Error during thinking process: ${error.message}`);
+      this.memoryModule.addMessage({ role: 'system', content: `Error during thinking: ${error.message}` });
+      return { error: `Thinking failed: ${error.message}` };
     }
   }
 
-  // --- Remove speak() and say() methods ---
-  // async say(text: string): Promise<void> { ... }
-  // async speak(text: string, useLocal = false): Promise<void> { ... }
-  // --- End Remove speak() and say() methods ---
-
-
   public displayMessage(message: string) {
-    marked.setOptions({
-      renderer: new TerminalRenderer(),
-    });
+    marked.setOptions({ renderer: new TerminalRenderer() });
     console.log(marked(message));
   }
 
-  // --- Remove Method to Load Specific Legacy Actions ---
-  // private loadRequiredLegacyActions() { ... }
-  // --- End Remove Method ---
-
-
   async sense(): Promise<any> {
-    return new Promise((resolve) => {
-      // @todo: provide more context information
-      resolve({
-        agent: {
-          name: "Saiku",
-        },
-        os: process.platform,
-        arch: process.arch,
-        version: process.version,
-        memory: process.memoryUsage(),
-        cpu: process.cpuUsage(),
-        uptime: process.uptime(),
-        // provide date and time
-        date: new Date().toLocaleDateString(),
-        start_time: new Date().toLocaleTimeString(),
-        // provide location information
-        cwd: process.cwd(),
-        // provide information about the current user
-        current_user: {
-          name: process.env.ME,
-          country: process.env.COUNTRY,
-          city: process.env.CITY,
-          company: process.env.COMPANY,
-          phone: process.env.PHONE,
-        },
-        api_services: {
-          weather: process.env.WEATHER_API_KEY,
-          gitlab: (() => {
-            const gitlab: any = {};
-            for (const key in process.env) {
-              if (key.startsWith("GITLAB_")) {
-                gitlab[key.replace("GITLAB_", "")] = process.env[key];
-              }
-            }
-            return gitlab;
-          })(),
-        },
-        ...this.memory,
-      });
-    });
+    const sensedData = await this.sensingModule.sense();
+    const shortTermMemory = this.memoryModule.getShortTermMemory();
+    return { ...sensedData, shortTermMemory: shortTermMemory };
   }
 
   async act(actionName: string, args: any): Promise<string> {
-    try {
-      // Import dynamically to avoid circular dependencies if still needed in utils
-      // const { executeWithMcp } = await import('@/mcp/utils'); // Keep if executeWithMcp remains in utils
-
-      // Try executing via MCP first
-      let mcpExecuted = false;
-      let output = '';
-      let executionError: any = null;
-
-      try {
-      // Check if MCP client manager exists and has active connections before attempting
-      if (this.mcpClient instanceof McpClientManager && this.mcpClient.hasActiveConnections()) {
-          this.displayMessage(
-            `_Attempting MCP tool execution via manager: **${actionName}**_`
-            );
-            // Rely on instanceof check to narrow type for executeWithMcp call
-            // Restore executeWithMcp call
-            output = await executeWithMcp(this.mcpClient, actionName, args);
-            await this.updateMemory({
-              lastAction: actionName, // Log the action name including server prefix
-              lastActionStatus: "success",
-            });
-            mcpExecuted = true; // Mark as executed via MCP
-            return output; // Return successful MCP output
-        } else {
-             this.displayMessage(
-              `_MCP client not available or connected. Skipping MCP execution for **${actionName}**._`
-            );
-        }
-      } catch (mcpError: any) {
-        // Capture MCP specific errors
-        executionError = mcpError;
-        console.error(`MCP execution failed for tool ${actionName}: ${mcpError.message}`);
-        // Don't immediately fall back if the error indicates the tool simply wasn't found via MCP
-        if (!mcpError.message?.includes('No MCP tool found')) {
-           // Log other MCP errors but might still try legacy
-           console.log(`Non-'Not Found' MCP Error encountered, will attempt legacy fallback.`);
-        } else {
-             this.displayMessage(
-              `_MCP tool **${actionName}** not found via MCP execution path._`
-            );
-        }
-      }
-
-      // --- Temporarily Disable Legacy Action Fallback ---
-      if (!mcpExecuted) {
-          // If MCP execution wasn't attempted or failed, report the specific error directly
-          let finalErrorMessage = `Action or Tool '${actionName}' failed or was not found via MCP.`; // Default if no specific error
-          if (executionError) {
-              // Simplify the error message drastically for the LLM
-              const missingArgMatch = executionError.message?.match(/"path":\["([^"]+)"\],"message":"Required"/);
-              if (missingArgMatch) {
-                  // Focus ONLY on the missing argument
-                  finalErrorMessage = `Error: Missing required argument: ${missingArgMatch[1]}`;
-              } else {
-                  // For other errors, provide a generic message for now
-                  finalErrorMessage = `Error executing tool '${actionName}'.`;
-                  // Log the full error for debugging, but don't send it all to the LLM
-                  console.error("Full execution error:", executionError.message);
-              }
-          }
-          this.displayMessage(`_Failed to execute **${actionName}**: ${finalErrorMessage}_`);
-          await this.updateMemory({
-             lastAction: actionName, // Log the action that failed
-             lastActionStatus: "failure",
-          });
-          return finalErrorMessage; // Return the error, do not attempt legacy fallback
-      }
-      // --- End Disable Legacy Action Fallback ---
-
-      // This should only be reached if MCP execution succeeded earlier
-      return output;
-    } catch (error: any) {
-       console.error(`Unexpected error in act method for ${actionName}: ${error.message}`);
-       return `Unexpected error processing action '${actionName}': ${error.message}`;
-    }
+    const result = await this.actingModule.act(actionName, args);
+    const status = result.startsWith("Error:") ? "failure" : "success";
+    this.memoryModule.updateShortTermMemory({
+      lastAction: actionName,
+      lastActionStatus: status,
+    });
+     this.memoryModule.addMessage({ role: 'tool', content: result });
+    return result;
   }
 
   evaluatePerformance(): number {
-    // Evaluate the agent's performance based on its objectives.
-    // Returns a score. For now, we return a placeholder value.
     return this.score;
   }
 
-  // manage the agent's memory
-  remember(key: string, value: any): void {
-    this.memory[key] = value;
+  // --- Memory Management Delegation ---
+  remember(key: keyof ShortTermMemory, value: any): void {
+    this.memoryModule.updateShortTermMemory({ [key]: value });
   }
 
-  recall(key: string): any {
-    return this.memory[key];
+  recall(key: keyof ShortTermMemory): any {
+    return this.memoryModule.getShortTermMemory()[key];
   }
 
-  forget(key: string): void {
-    delete this.memory[key];
+  forget(key: keyof ShortTermMemory): void {
+    this.memoryModule.updateShortTermMemory({ [key]: null });
   }
+
   saveMemory(): void {
-    // we save the agent's memory to a file
-    fs.writeFileSync(
-      path.join(__dirname, "../data/memory.json"),
-      JSON.stringify(this.memory)
-    );
-  }
-  getMemory(): any {
-    // @todo: we retrieve the agent's memory and long-term memory
-    return this.memory;
+    console.warn("Agent.saveMemory() is deprecated; MemoryModule handles persistence.");
   }
 
-  updateMemory(args: any): any {
-    this.memory = {
-      ...this.memory,
-      ...args,
-    };
+  updateMemory(args: Partial<ShortTermMemory>): void {
+    this.memoryModule.updateShortTermMemory(args);
   }
+
+  addMessage(message: Message): void {
+    this.memoryModule.addMessage(message);
+  }
+
   async interact(delegate?: boolean): Promise<void | string> {
+    console.warn("Agent.interact() might need replacement by a proper sense-think-act loop.");
     return await this.model.interact(delegate);
   }
+
+  /**
+   * Processes a user request by running the sense-think-act loop.
+   */
+  async processUserRequest(userInput: string): Promise<string | any> {
+    this.addMessage({ role: 'user', content: userInput });
+    let maxTurns = 10;
+    let turn = 0;
+
+    while (turn < maxTurns) {
+      turn++;
+      this.displayMessage(`\n--- Turn ${turn} ---`);
+      const decisionResponse = await this.think(true);
+
+      if (decisionResponse?.error) {
+        this.displayMessage(`Error during thinking: ${decisionResponse.error}`);
+        return `Error: ${decisionResponse.error}`;
+      }
+
+      const assistantContent = decisionResponse?.text;
+
+      if (typeof assistantContent === 'object' && assistantContent?.tool_calls) {
+         const toolCalls = assistantContent.tool_calls; // Assign directly inside the block
+         this.displayMessage(`_Requesting tool execution: ${toolCalls.map((t: any) => t.function?.name || 'unknown').join(', ')}_`);
+
+         if (toolCalls.length > 0) { // Check length directly
+            const toolCall = toolCalls[0]; // No need for non-null assertion
+            const toolName = toolCall.function?.name;
+            const toolArgs = toolCall.function?.arguments;
+
+            if (toolName && toolArgs) {
+              try {
+                const parsedArgs = JSON.parse(toolArgs);
+                this.displayMessage(`_Executing tool: **${toolName}** with args: ${JSON.stringify(parsedArgs)}_`);
+                const toolResult = await this.act(toolName, parsedArgs);
+                this.displayMessage(`_Tool Result: ${toolResult}_`);
+              } catch (e: any) {
+                console.error(`Error parsing tool arguments or executing tool ${toolName}:`, e);
+                this.addMessage({ role: 'tool', content: `Error processing tool ${toolName}: ${e.message}` });
+                this.displayMessage(`_Error executing tool ${toolName}: ${e.message}_`);
+              }
+            } else {
+               this.displayMessage(`_Invalid tool call structure received: ${JSON.stringify(toolCall)}_`);
+               this.addMessage({ role: 'system', content: `[Received invalid tool call structure]` });
+            }
+         } else {
+            this.displayMessage("No tool calls found, but expected. Ending turn.");
+            return assistantContent || "[No response and no tool call]";
+         }
+      } else {
+         this.displayMessage(`Assistant Response: ${assistantContent}`);
+         return assistantContent;
+      }
+    }
+
+    this.displayMessage("Maximum interaction turns reached.");
+    return "Max turns reached.";
+  }
+
 
   /**
    * Get combined tool definitions from MCP and legacy actions
@@ -568,8 +417,6 @@ class Agent implements IAgent {
    */
   async getToolDefinitions(): Promise<any[]> {
     let allTools: any[] = [];
-
-    // Check connection status based on client type
     let isConnected = false;
     if (this.mcpClient instanceof McpClientManager) {
         isConnected = this.mcpClient.hasActiveConnections();
@@ -579,57 +426,35 @@ class Agent implements IAgent {
 
     if (this.mcpClient && isConnected) {
       try {
-        // Get MCP tools from the connected client, ensuring it's an array
         const mcpToolsResult = await this.mcpClient.listTools();
-        const mcpTools = Array.isArray(mcpToolsResult) ? mcpToolsResult : []; // Default to empty array
+        const mcpTools = Array.isArray(mcpToolsResult) ? mcpToolsResult : [];
+        const validMcpTools = mcpTools.filter((tool: any) => tool && typeof tool.name === 'string' && tool.name.includes('/'));
 
-        // Filter out tools with invalid names BEFORE mapping and extract base name
-        const validMcpTools = mcpTools.map((tool: any) => {
-            // Extract base name (part after the last '/')
-            const fullName = tool?.name || '';
+        const sanitizeSchemaForGemini = (schema: any): any => ({ type: "object", properties: {} });
+
+        const mcpToolDefinitions = validMcpTools.map((tool: any) => {
+            const fullName = tool.name;
             const baseName = fullName.substring(fullName.lastIndexOf('/') + 1);
-            return { ...tool, name: baseName, fullName: fullName }; // Keep original name as fullName, overwrite name with baseName
-        }).filter((tool: any) => {
-            // Validate the extracted base name
-            // Validate the extracted base name
-            const isValid = tool && typeof tool.name === 'string' && /^[a-zA-Z0-9_-]+$/.test(tool.name);
-            // if (!isValid) { // Keep the filtering logic, just remove the log
-            //     // Log the original full name if filtering
-            //     console.warn(`[Agent getToolDefinitions] Filtering out invalid tool (based on base name '${tool.name}'):`, tool.fullName);
-            // }
-            return isValid;
-        });
+            const llmCompatibleBaseName = baseName.replace(/[^a-zA-Z0-9_]/g, '_');
+            return {
+                type: "function",
+                function: {
+                    name: llmCompatibleBaseName,
+                    description: tool.description || `MCP tool: ${fullName}`,
+                    parameters: sanitizeSchemaForGemini(tool.inputSchema || tool.schema)
+                },
+                fullName: fullName
+            };
+        }).filter(toolDef => /^[a-zA-Z0-9_]+$/.test(toolDef.function.name));
 
-
-        // Convert MCP tools to LLM tool format using the base name
-        const mcpToolDefinitions = validMcpTools.map((tool: any) => ({
-          type: "function",
-          function: {
-            name: tool.name, // Use the extracted base name
-            description: tool.description || `MCP tool: ${tool.fullName}`, // Use full name in description for clarity
-            // Parameters schema is already in the right format from MCP
-            parameters: tool.inputSchema || tool.schema || { // Use inputSchema if available, fallback to schema
-              type: "object",
-              properties: {},
-              required: []
-            }
-          }
-        }));
-
-        // Set MCP tools as the only available tools
         allTools = mcpToolDefinitions;
         return allTools;
-        // Original logic: return [...mcpToolDefinitions, ...legacyTools];
       } catch (error: any) {
         console.error('Error loading MCP tools:', error.message);
-        // Fall back to empty list if MCP fails and legacy is disabled
         return [];
       }
     }
-
-    // Return empty list if MCP not available and legacy is disabled
     return [];
-    // Original logic: return allTools; // (which would be legacy tools)
   }
 
   /**

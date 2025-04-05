@@ -103,17 +103,21 @@ export async function executeWithMcp(
         toolName = mapping.tool;
         toolArgs = mapping.transformArgs ? mapping.transformArgs(args) : args;
         console.log(`Mapping found for '${actionName}'. Using MCP tool: '${toolName}'`);
-    } else {
-        // No mapping, try converting legacy action_name to MCP tool-name
-        toolName = actionName.replace(/_/g, '-');
+    } else if (actionName.includes('/')) {
+        // Action name already includes server prefix, use it directly
+        toolName = actionName;
         toolArgs = args;
-        console.log(`No mapping for '${actionName}'. Attempting direct MCP tool call: '${toolName}'`);
-        // Note: If the LLM calls with the already converted name (e.g., 'git-action'),
-        // this conversion won't hurt, but it won't find a mapping either.
+         console.log(`Action name '${actionName}' seems to be a full MCP tool name. Using directly.`);
+    }
+     else {
+        // No mapping and no server prefix, assume it's a base name needing conversion (legacy or simple tool)
+        toolName = actionName.replace(/_/g, '-'); // Convert underscores for potential direct call
+        toolArgs = args;
+        console.log(`No mapping for '${actionName}'. Attempting direct MCP tool call after conversion: '${toolName}'`);
     }
 
     try {
-        // Attempt the determined tool call
+        // Attempt the determined tool call using the potentially adjusted toolName
         const result = await client.callTool(toolName, toolArgs);
 
         // Extract the text content from the result if successful

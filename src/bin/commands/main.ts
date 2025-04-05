@@ -71,13 +71,19 @@ async function main(opts: AgentOptions) {
         role: "user",
         content: userQuery,
       });
-      // handle the user query
-      // @ts-ignore
-      const {oraPromise} = await requiresm('ora');
 
-      // @todo for interactive execute_code oraPromise is not working. Example: nextjs
-      await agent.interact();
-      // await oraPromise(agent.interact());
+      // Call the new processUserRequest method instead of interact
+      const finalResponse = await agent.processUserRequest(userQuery);
+      // Display the final response if it's not handled internally
+      // (processUserRequest currently returns the final text or error)
+      if (typeof finalResponse === 'string') {
+          agent.displayMessage(finalResponse);
+      } else if (finalResponse?.error) {
+           agent.displayMessage(finalResponse.error);
+      }
+
+
+      // Reset userQuery for the next loop iteration in interactive mode
       userQuery = "";
     }
   } while (userQuery.toLowerCase() !== "quit" && Boolean(interactive));
